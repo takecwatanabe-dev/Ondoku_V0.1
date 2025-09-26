@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>音読評価 PWA（Roles） v0.2.0</title>
+<title>音読評価 PWA（Roles） V0.2.△</title>
 <meta name="theme-color" content="#0b1020">
 <style>
 :root{
@@ -16,7 +16,7 @@ html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);
 header{position:sticky;top:0;background:linear-gradient(180deg,rgba(0,0,0,.5),transparent),var(--panel);
   padding:10px 14px;box-shadow:var(--shadow);z-index:50}
 h1{margin:0;font-size:18px}
-small.ver{color:var(--muted);margin-left:8px}
+small.ver{color:#8aa0bf;margin-left:8px}
 .badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#1e293b;color:#cfe6ff;border:1px solid #2a3a56;font-size:12px}
 .note{color:#9bb2d1;font-size:12px}
 .wrapper{display:grid;grid-template-columns:1fr;gap:16px;padding:14px;max-width:980px;margin:0 auto}
@@ -49,7 +49,7 @@ canvas{background:#0b1322;border:1px solid #233047;border-radius:12px}
 <header>
   <div class="flex">
     <div>
-      <h1>音読評価 PWA（ロール切替）<small class="ver">v0.2.0</small></h1>
+      <h1>音読評価 PWA（ロール切替）<small class="ver">V0.2.△</small></h1>
       <div class="note">#/s=生徒｜#/t=講師｜#/g=保護者（招待リンクから）｜?debug=1で画面内ログ</div>
     </div>
     <nav class="tabnav right">
@@ -290,7 +290,7 @@ window.addEventListener('hashchange', setActiveTab);
 
 /* ======= 生徒：録音/ASR/採点 ======= */
 let mediaStream, audioCtx, analyser, procNode, recorder, recChunks=[], asr, asrActive=false;
-let startedAt=0, voicedMs=0, f0Stats={vals:[],min:9999,max:0};
+let voicedMs=0, f0Stats={vals:[],min:9999,max:0};
 
 const viz = qs('#viz'); const vctx = viz.getContext('2d');
 
@@ -333,7 +333,7 @@ async function startRec(){
 
   procNode = audioCtx.createScriptProcessor(1024,1,1);
   const timeBuf = new Uint8Array(analyser.fftSize); const f0Arr=f0Stats.vals=[]; f0Stats.min=9999; f0Stats.max=0;
-  startedAt = performance.now(); voicedMs=0;
+  voicedMs=0;
 
   procNode.onaudioprocess = e=>{
     const ch = e.inputBuffer.getChannelData(0);
