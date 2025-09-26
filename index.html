@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>音読評価 PWA（Roles） V0.2.2</title>
+<title>音読評価 PWA（Roles） V0.2.3</title>
 <meta name="theme-color" content="#0b1020">
 <style>
 :root{
@@ -49,7 +49,7 @@ canvas{background:#0b1322;border:1px solid #233047;border-radius:12px}
 <header>
   <div class="flex">
     <div>
-      <h1>音読評価 PWA（ロール切替）<small class="ver">V0.2.2</small></h1>
+      <h1>音読評価 PWA（ロール切替）<small class="ver">V0.2.3</small></h1>
       <div class="note">#/s=生徒｜#/t=講師｜#/g=保護者（招待リンクから）｜?debug=1で画面内ログ</div>
     </div>
     <nav class="tabnav right">
@@ -63,7 +63,7 @@ canvas{background:#0b1322;border:1px solid #233047;border-radius:12px}
 
 <main class="wrapper">
   <!-- 生徒 -->
-  <section id="viewS" class="card hidden">
+  <section id="viewS" class="card">
     <h2>生徒｜音読</h2>
     <div class="row">
       <span>この端末の生徒：</span>
@@ -114,12 +114,29 @@ canvas{background:#0b1322;border:1px solid #233047;border-radius:12px}
 
     <div class="card" style="margin:-4px 0 10px 0">
       <h3>1) 生徒管理</h3>
-      <div class=\"row\">\n        <input id=\"studentName\" placeholder=\"氏名\">\n        <input id=\"studentSchool\" placeholder=\"学校名\">\n        <select id=\"studentGrade\">\n          <option>小1<\/option><option>小2<\/option><option>小3<\/option>\n          <option selected>小4<\/option><option>小5<\/option><option>小6<\/option>\n        <\/select>\n        <button id=\"addStudentBtn\" class=\"primary\">生徒追加<\/button>\n      <
-      <div class="row">
-        <label>生徒一覧：</label>
-        <select id="studentList"></select>
-        <button id="delStudentBtn" class="danger">削除</button>
-      </div>
+      <div class=\"row\">
+        <input id=\"studentName\" placeholder=\"氏名\">
+        <input id=\"studentSchool\" placeholder=\"学校名\">
+        <select id=\"studentGrade\">
+          <option>小1<\/option><option>小2<\/option><option>小3<\/option>
+          <option selected>小4<\/option><option>小5<\/option><option>小6<\/option>
+        <\/select>
+        <button id=\"addStudentBtn\" class=\"primary\">生徒追加<\/button>
+      <\/div>
+      <div class=\"row\">
+        <input id=\"searchSchool\" placeholder=\"学校で絞り込み（任意）\">
+        <select id=\"searchGrade\">
+          <option value=\"\">学年で絞り込み（任意）<\/option>
+          <option value=\"1\">小1<\/option><option value=\"2\">小2<\/option><option value=\"3\">小3<\/option>
+          <option value=\"4\">小4<\/option><option value=\"5\">小5<\/option><option value=\"6\">小6<\/option>
+        <\/select>
+        <button id=\"searchStudentsBtn\">検索<\/button>
+      <\/div>
+      <div class=\"row\">
+        <label>生徒一覧：<\/label>
+        <select id=\"studentList\"><\/select>
+        <button id=\"delStudentBtn\" class=\"danger\">削除<\/button>
+      <\/div>
     </div>
 
     <div class="card" style="margin:-4px 0 10px 0">
@@ -191,6 +208,9 @@ canvas{background:#0b1322;border:1px solid #233047;border-radius:12px}
 const qs=s=>document.querySelector(s), qsa=s=>Array.from(document.querySelectorAll(s));
 const debug = new URLSearchParams(location.search).get('debug')==='1';
 if(debug) qs('#dbg').classList.remove('hidden');
+// --- runtime logger (shows in [ログ] when ?debug=1) ---
+window.onerror = (m,src,ln,col,err)=>{ try{log('ERROR:', m, src+':'+ln+':'+col, err&&err.stack?err.stack:'');}catch(_){}; return false; };
+window.addEventListener('unhandledrejection', e=>{ try{log('PROMISE REJECTION:', e.reason && (e.reason.stack||e.reason));}catch(_){}; });
 function log(...a){ if(debug){ const el=qs('#log'); el.textContent+=a.join(' ')+"\n"; el.scrollTop=el.scrollHeight; } }
 function z2(n){ return String(n).padStart(2,'0'); }
 function ymdhm(t){ const d=new Date(t); return `${d.getFullYear()}-${z2(d.getMonth()+1)}-${z2(d.getDate())} ${z2(d.getHours())}:${z2(d.getMinutes())}`; }
@@ -204,13 +224,52 @@ function normalizeText(t){
 }
 function isKanji(ch){ return /[\u4E00-\u9FFF\u3400-\u4DBF]/.test(ch); }
 
-// === 学年繰り上がりヘルパ ===\nfunction academicYear(d){ const y=d.getFullYear(); const boundary=new Date(y,3,2); return (d>=boundary)? y : y-1; }\nfunction parseGrade(label){ const m=String(label||'').match(/小\s*([1-6])/); return m?Number(m[1]):1; }\nfunction currentGradeNum(st){ const base = st.grade_base || parseGrade(st.grade||'小1'); const baseAy = st.grade_base_ay || academicYear(new Date(st.created_at||Date.now())); const delta = academicYear(new Date()) - baseAy; return Math.min(6, Math.max(1, base + delta)); }\nfunction currentGradeLabel(st){ return `小${currentGradeNum(st)}`; }\n\n/* ======= IndexedDB ======= */
+// === 学年繰り上がりヘルパ ===
+function academicYear(d){ const y=d.getFullYear(); const boundary=new Date(y,3,2); return (d>=boundary)? y : y-1; }
+function parseGrade(label){ const m=String(label||'').match(/小\s*([1-6])/); return m?Number(m[1]):1; }
+function currentGradeNum(st){ const base = st.grade_base || parseGrade(st.grade||'小1'); const baseAy = st.grade_base_ay || academicYear(new Date(st.created_at||Date.now())); const delta = academicYear(new Date()) - baseAy; return Math.min(6, Math.max(1, base + delta)); }
+function currentGradeLabel(st){ return `小${currentGradeNum(st)}`; }
+
+/* ======= IndexedDB ======= */
 const DB='oral_roles_v02';
 let db;
 function openDB(){
   return new Promise((res,rej)=>{
     const r = indexedDB.open(DB,1);
-    r.onupgradeneeded = e=>{\n      const db=e.target.result;\n      const tx=e.target.transaction;\n      // students\n      let s;\n      if(!db.objectStoreNames.contains('students')){\n        s=db.createObjectStore('students',{keyPath:'id',autoIncrement:true});\n      }else{\n        s=tx.objectStore('students');\n      }\n      if(!s.indexNames.contains('name')) s.createIndex('name','name',{unique:false});\n      if(!s.indexNames.contains('school')) s.createIndex('school','school',{unique:false});\n      if(!s.indexNames.contains('grade_base')) s.createIndex('grade_base','grade_base',{unique:false});\n      if(!s.indexNames.contains('grade_base_ay')) s.createIndex('grade_base_ay','grade_base_ay',{unique:false});\n\n      // sessions\n      let sess;\n      if(!db.objectStoreNames.contains('sessions')){\n        sess=db.createObjectStore('sessions',{keyPath:'id',autoIncrement:true});\n      }else{ sess=tx.objectStore('sessions'); }\n      if(!sess.indexNames.contains('student_id')) sess.createIndex('student_id','student_id',{unique:false});\n      if(!sess.indexNames.contains('created_at')) sess.createIndex('created_at','created_at',{unique:false});\n\n      // passages\n      if(!db.objectStoreNames.contains('passages')){ db.createObjectStore('passages',{keyPath:'no'}); }\n      // invites\n      if(!db.objectStoreNames.contains('invites')){ db.createObjectStore('invites',{keyPath:'token'}); }\n      // guardians\n      let g;\n      if(!db.objectStoreNames.contains('guardians')){\n        g=db.createObjectStore('guardians',{keyPath:'id',autoIncrement:true});\n      }else{ g=tx.objectStore('guardians'); }\n      if(!g.indexNames.contains('student_id')) g.createIndex('student_id','student_id',{unique:false});\n    };
+    r.onupgradeneeded = e=>{
+      const db=e.target.result;
+      const tx=e.target.transaction;
+      // students
+      let s;
+      if(!db.objectStoreNames.contains('students')){
+        s=db.createObjectStore('students',{keyPath:'id',autoIncrement:true});
+      }else{
+        s=tx.objectStore('students');
+      }
+      if(!s.indexNames.contains('name')) s.createIndex('name','name',{unique:false});
+      if(!s.indexNames.contains('school')) s.createIndex('school','school',{unique:false});
+      if(!s.indexNames.contains('grade_base')) s.createIndex('grade_base','grade_base',{unique:false});
+      if(!s.indexNames.contains('grade_base_ay')) s.createIndex('grade_base_ay','grade_base_ay',{unique:false});
+
+      // sessions
+      let sess;
+      if(!db.objectStoreNames.contains('sessions')){
+        sess=db.createObjectStore('sessions',{keyPath:'id',autoIncrement:true});
+      }else{ sess=tx.objectStore('sessions'); }
+      if(!sess.indexNames.contains('student_id')) sess.createIndex('student_id','student_id',{unique:false});
+      if(!sess.indexNames.contains('created_at')) sess.createIndex('created_at','created_at',{unique:false});
+
+      // passages
+      if(!db.objectStoreNames.contains('passages')){ db.createObjectStore('passages',{keyPath:'no'}); }
+      // invites
+      if(!db.objectStoreNames.contains('invites')){ db.createObjectStore('invites',{keyPath:'token'}); }
+      // guardians
+      let g;
+      if(!db.objectStoreNames.contains('guardians')){
+        g=db.createObjectStore('guardians',{keyPath:'id',autoIncrement:true});
+      }else{ g=tx.objectStore('guardians'); }
+      if(!g.indexNames.contains('student_id')) g.createIndex('student_id','student_id',{unique:false});
+    };
     r.onsuccess=()=>{ db=r.result; res(); };
     r.onerror=()=>rej(r.error);
   });
@@ -409,36 +468,8 @@ function updateStudentBadge(){
   if(!currentStudentId) { qs('#studentBadge').textContent='未設定'; return; }
   idb.listStudents().then(l=>{
     const st=l.find(x=>x.id===currentStudentId);
-    qs('#studentBadge').textContent = st ? `${st.name}（${st.grade}）` : '未設定';
+    qs('#studentBadge').textContent = st ? `${st.name}（${currentGradeLabel(st)}）` : '未設定';
   });
-}
-async function chooseStudent(){
-  const list=await idb.listStudents();
-  if(!list.length){ alert('まず講師画面（#/t）で生徒を追加してください。'); return; }
-  const name=prompt('生徒名を選んで入力してください\n' + list.map(s=>`・${s.name}（${s.grade}）`).join('\n'));
-  const found=list.find(s=>s.name===name);
-  if(!found){ alert('見つかりませんでした'); return; }
-  currentStudentId=found.id; localStorage.setItem('student_id',String(currentStudentId));
-  updateStudentBadge();
-}
-
-/* ======= テキスト番号 ======= */
-async function loadPassageByNo(no, into){
-  const p = await idb.getPassage(no);
-  if(!p){ alert('登録されていない番号です'); return; }
-  into.value = p.text;
-  qs('#passageS')===into && (qs('#passageS').scrollTop=0);
-}
-
-/* ======= 画面イベント（生徒） ======= */
-qs('#setStudentBtn').onclick = chooseStudent;
-qs('#loadPassageBtn').onclick = ()=>{ const no=qs('#textNo').value.trim(); if(no) loadPassageByNo(no,qs('#passageS')); };
-
-qs('#startBtn').onclick = async ()=>{
-  qs('#startBtn').disabled=true; qs('#stopBtn').disabled=false; qs('#saveBtn').disabled=true; qs('#dlAudioBtn').disabled=true;
-  await startRec();
-  const ok = startASR();
-  if(!ok){ qs('#startBtn').disabled=false; qs('#stopBtn').disabled=true; }
 };
 qs('#stopBtn').onclick = async ()=>{
   await stopRec();
@@ -473,10 +504,23 @@ qs('#analyzeBtn').onclick = ()=>{
 
 /* ======= 講師UI ======= */
 async function refreshTeacher(){
-  // 生徒一覧
   const list=await idb.listStudents();
-  const sel=qs('#studentList'); sel.innerHTML='';
-  list.forEach(s=>{ const o=document.createElement('option'); o.value=s.id; o.textContent=`${s.name}（${s.grade}）`; sel.appendChild(o); });
+  const schoolF=(qs('#searchSchool')&&qs('#searchSchool').value.trim())||'';
+  const gradeF=(qs('#searchGrade')&&qs('#searchGrade').value)||'';
+  const filtered=list.filter(s=>{
+    const okSchool = !schoolF || (String(s.school||'').includes(schoolF));
+    const okGrade = !gradeF || (currentGradeNum(s)===Number(gradeF));
+    return okSchool && okGrade;
+  });
+  // 生徒一覧
+  const sel=qs('#studentList'); if(sel){ sel.innerHTML=''; filtered.forEach(s=>{ const o=document.createElement('option'); o.value=s.id; o.textContent=`${s.name}（${currentGradeLabel(s)}｜${s.school||'学校未登録'}）`; sel.appendChild(o); }); }
+  // 保護者招待用
+  const gs=qs('#guardianStudent'); if(gs){ gs.innerHTML=''; filtered.forEach(s=>{ const o=document.createElement('option'); o.value=s.id; o.textContent=`${s.name}（${currentGradeLabel(s)}｜${s.school||'学校未登録'}）`; gs.appendChild(o); }); }
+  // 今日のダイジェスト
+  await refreshToday();
+  // 番号一覧
+  await listPassages();
+}（${s.grade}）`; sel.appendChild(o); });
   const gs=qs('#guardianStudent'); gs.innerHTML='';
   list.forEach(s=>{ const o=document.createElement('option'); o.value=s.id; o.textContent=`${s.name}（${s.grade}）`; gs.appendChild(o); });
   // 今日のダイジェスト
@@ -485,10 +529,20 @@ async function refreshTeacher(){
   await listPassages();
 }
 qs('#addStudentBtn').onclick = async ()=>{
-  const name=qs('#studentName').value.trim(); const grade=qs('#studentGrade').value;
+  const name=qs('#studentName').value.trim();
+  const school=qs('#studentSchool').value.trim();
+  const gradeLabel=qs('#studentGrade').value;
   if(!name) return alert('氏名を入れてください');
-  await idb.addStudent(name,grade);
-  qs('#studentName').value=''; await refreshTeacher();
+  const s={
+    name,
+    school,
+    grade: gradeLabel,
+    grade_base: parseGrade(gradeLabel),
+    grade_base_ay: academicYear(new Date()),
+  };
+  await idb.addStudent(s);
+  qs('#studentName').value=''; qs('#studentSchool').value='';
+  await refreshTeacher();
 };
 qs('#delStudentBtn').onclick = async ()=>{
   const id=Number(qs('#studentList').value||0); if(!id) return;
@@ -529,9 +583,9 @@ async function refreshToday(){
   const students=await idb.listStudents(); const sMap=new Map(students.map(s=>[s.id,s]));
   const aggKanji={};
   rows.forEach(r=>{
-    const st=sMap.get(r.student_id)||{name:'?',grade:'?'};
+    const st=sMap.get(r.student_id)||{name:'?',grade:'?',school:''};
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${ymdhm(r.created_at)}</td><td>${st.name}</td><td>${st.grade}</td><td>${r.text_no||''}</td>
+    tr.innerHTML=`<td>${ymdhm(r.created_at)}</td><td>${st.name}</td><td>${currentGradeLabel(st)}</td><td>${r.text_no||''}</td>
       <td>${r.cpm}</td><td>${r.cer}</td><td>${r.f0range}</td><td>${r.overall}</td>`;
     t.appendChild(tr);
     for(const k in (r.miss_kanji||{})){ aggKanji[k]=(aggKanji[k]||0)+r.miss_kanji[k]; }
@@ -540,15 +594,18 @@ async function refreshToday(){
   qs('#kanjiRankToday').textContent = rank.join('　');
 }
 qs('#refreshTodayBtn').onclick = refreshToday;
+if(qs('#searchStudentsBtn')) qs('#searchStudentsBtn').onclick = refreshTeacher;
+if(qs('#searchSchool')) qs('#searchSchool').addEventListener('keydown',e=>{ if(e.key==='Enter') refreshTeacher(); });
+if(qs('#searchGrade')) qs('#searchGrade').addEventListener('change',refreshTeacher);
 qs('#exportCsvBtn').onclick = async ()=>{
   const rows=await idb.listSessions();
-  const hdr=['datetime','student','grade','text_no','cpm','cer','f0range','prosody','overall','miss_kanji_json'];
+  const hdr=['datetime','student','grade_current','text_no','cpm','cer','f0range','prosody','overall','miss_kanji_json'];
   const students=await idb.listStudents(); const sMap=new Map(students.map(s=>[s.id,s]));
   const lines=[hdr.join(',')];
   rows.forEach(r=>{
-    const st=sMap.get(r.student_id)||{name:'?',grade:'?'};
+    const st=sMap.get(r.student_id)||{name:'?',grade:'?',school:''};
     const miss=JSON.stringify(r.miss_kanji||{});
-    const vals=[new Date(r.created_at).toISOString(),st.name,st.grade,r.text_no||'',r.cpm,r.cer,r.f0range,r.prosodyScore,r.overall,miss]
+    const vals=[new Date(r.created_at).toISOString(),st.name,currentGradeLabel(st),r.text_no||'',r.cpm,r.cer,r.f0range,r.prosodyScore,r.overall,miss]
       .map(v=>`"${String(v).replace(/"/g,'""')}"`);
     lines.push(vals.join(','));
   });
@@ -591,7 +648,7 @@ async function initGuardianFromToken(){
   const sid=Number(localStorage.getItem('guardian_student_id')||0);
   if(!sid){ qs('#gStudent').textContent='未連携'; return; }
   const st=(await idb.listStudents()).find(s=>s.id===sid);
-  qs('#gStudent').textContent = st? `${st.name}（${st.grade}）` : '未連携';
+  qs('#gStudent').textContent = st? `${st.name}（${currentGradeLabel(st)}）` : '未連携';
   // 本日の結果
   const today=new Date(); today.setHours(0,0,0,0);
   const rows=await idb.listSessions(sid,today.getTime(),today.getTime()+86400000);
@@ -608,25 +665,24 @@ qs('#gInstallBtn').onclick = ()=>{
 
 /* ======= ルート初期化 ======= */
 async function init(){
-  await openDB();
-  // デモ用のサンプルが無ければ登録
-  const ps=await idb.listPassages();
-  if(!ps.length){
-    await idb.savePassage('1001','春の川辺', '春の川辺を歩くと、冷たい風の中にも、少しずつあたたかさが感じられます。土手の草むらには、小さな花が顔を出し、川の流れはきらきらと光っています。ぼくは、遠くで鳴く鳥の声を聞きながら、ゆっくりと足もとを確かめて歩きました。');
-    await idb.savePassage('1002','夏の入道雲', '夏の午後、空には大きな入道雲がむくむくと立ちのぼります。ひまわりの花は太陽を見上げ、遠くからは祭りの笛の音が聞こえてきます。わたしは汗をふきながらも、どこかうきうきした気持ちになりました。');
-  }
-  updateStudentBadge();
+  try{ await openDB(); }
+  catch(e){ log('IndexedDB error:', e); alert('初期化に失敗しました（ブラウザ設定で保存が制限？）。読み取り専用モードで続行します。'); }
   if('serviceWorker' in navigator){
-    const sw=`
-      self.addEventListener('install',e=>{ e.waitUntil(caches.open('oral-roles-v022').then(c=>c.addAll(['./']))); });
-      self.addEventListener('fetch',e=>{ e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))); });
-    `;
-    const blob=new Blob([sw],{type:'text/javascript'});
-    try{ await navigator.serviceWorker.register(URL.createObjectURL(blob)); log('SW registered'); }catch(e){ log('SW failed',e); }
+    const ENABLE_SW = !location.hostname.endsWith('github.io'); // GitHub Pagesでは無効化（相性回避）
+    if(ENABLE_SW){
+      const sw=`
+        self.addEventListener('install',e=>{ e.waitUntil(caches.open('oral-roles-v023').then(c=>c.addAll(['./']))); });
+        self.addEventListener('fetch',e=>{ e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))); });
+      `;
+      const blob=new Blob([sw],{type:'text/javascript'});
+      try{ await navigator.serviceWorker.register(URL.createObjectURL(blob)); log('SW registered'); }catch(e){ log('SW failed',e); }
+    } else { log('ServiceWorker disabled on github.io'); }
   }
   setActiveTab();
 }
-init();
+// 早期にタブ切替（DB完了を待たない）
+setActiveTab();
+init().catch(e=>{ log('init failed:', e); });
 </script>
 </body>
 </html>
