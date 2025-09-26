@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>音読評価 PWA（Roles） V0.2.1</title>
+<title>音読評価 PWA（Roles） V0.2.2</title>
 <meta name="theme-color" content="#0b1020">
 <style>
 :root{
@@ -49,7 +49,7 @@ canvas{background:#0b1322;border:1px solid #233047;border-radius:12px}
 <header>
   <div class="flex">
     <div>
-      <h1>音読評価 PWA（ロール切替）<small class="ver">V0.2.1</small></h1>
+      <h1>音読評価 PWA（ロール切替）<small class="ver">V0.2.2</small></h1>
       <div class="note">#/s=生徒｜#/t=講師｜#/g=保護者（招待リンクから）｜?debug=1で画面内ログ</div>
     </div>
     <nav class="tabnav right">
@@ -114,14 +114,7 @@ canvas{background:#0b1322;border:1px solid #233047;border-radius:12px}
 
     <div class="card" style="margin:-4px 0 10px 0">
       <h3>1) 生徒管理</h3>
-      <div class="row">
-        <input id="studentName" placeholder="氏名">
-        <select id="studentGrade">
-          <option>小1</option><option>小2</option><option>小3</option>
-          <option selected>小4</option><option>小5</option><option>小6</option>
-        </select>
-        <button id="addStudentBtn" class="primary">生徒追加</button>
-      </div>
+      <div class=\"row\">\n        <input id=\"studentName\" placeholder=\"氏名\">\n        <input id=\"studentSchool\" placeholder=\"学校名\">\n        <select id=\"studentGrade\">\n          <option>小1<\/option><option>小2<\/option><option>小3<\/option>\n          <option selected>小4<\/option><option>小5<\/option><option>小6<\/option>\n        <\/select>\n        <button id=\"addStudentBtn\" class=\"primary\">生徒追加<\/button>\n      <
       <div class="row">
         <label>生徒一覧：</label>
         <select id="studentList"></select>
@@ -211,41 +204,20 @@ function normalizeText(t){
 }
 function isKanji(ch){ return /[\u4E00-\u9FFF\u3400-\u4DBF]/.test(ch); }
 
-/* ======= IndexedDB ======= */
+// === 学年繰り上がりヘルパ ===\nfunction academicYear(d){ const y=d.getFullYear(); const boundary=new Date(y,3,2); return (d>=boundary)? y : y-1; }\nfunction parseGrade(label){ const m=String(label||'').match(/小\s*([1-6])/); return m?Number(m[1]):1; }\nfunction currentGradeNum(st){ const base = st.grade_base || parseGrade(st.grade||'小1'); const baseAy = st.grade_base_ay || academicYear(new Date(st.created_at||Date.now())); const delta = academicYear(new Date()) - baseAy; return Math.min(6, Math.max(1, base + delta)); }\nfunction currentGradeLabel(st){ return `小${currentGradeNum(st)}`; }\n\n/* ======= IndexedDB ======= */
 const DB='oral_roles_v02';
 let db;
 function openDB(){
   return new Promise((res,rej)=>{
     const r = indexedDB.open(DB,1);
-    r.onupgradeneeded = e=>{
-      const db=e.target.result;
-      if(!db.objectStoreNames.contains('students')){
-        const s=db.createObjectStore('students',{keyPath:'id',autoIncrement:true});
-        s.createIndex('name','name',{unique:false});
-      }
-      if(!db.objectStoreNames.contains('sessions')){
-        const s=db.createObjectStore('sessions',{keyPath:'id',autoIncrement:true});
-        s.createIndex('student_id','student_id',{unique:false});
-        s.createIndex('created_at','created_at',{unique:false});
-      }
-      if(!db.objectStoreNames.contains('passages')){
-        const s=db.createObjectStore('passages',{keyPath:'no'}); // no:string
-      }
-      if(!db.objectStoreNames.contains('invites')){
-        const s=db.createObjectStore('invites',{keyPath:'token'});
-      }
-      if(!db.objectStoreNames.contains('guardians')){
-        const s=db.createObjectStore('guardians',{keyPath:'id',autoIncrement:true});
-        s.createIndex('student_id','student_id',{unique:false});
-      }
-    };
+    r.onupgradeneeded = e=>{\n      const db=e.target.result;\n      const tx=e.target.transaction;\n      // students\n      let s;\n      if(!db.objectStoreNames.contains('students')){\n        s=db.createObjectStore('students',{keyPath:'id',autoIncrement:true});\n      }else{\n        s=tx.objectStore('students');\n      }\n      if(!s.indexNames.contains('name')) s.createIndex('name','name',{unique:false});\n      if(!s.indexNames.contains('school')) s.createIndex('school','school',{unique:false});\n      if(!s.indexNames.contains('grade_base')) s.createIndex('grade_base','grade_base',{unique:false});\n      if(!s.indexNames.contains('grade_base_ay')) s.createIndex('grade_base_ay','grade_base_ay',{unique:false});\n\n      // sessions\n      let sess;\n      if(!db.objectStoreNames.contains('sessions')){\n        sess=db.createObjectStore('sessions',{keyPath:'id',autoIncrement:true});\n      }else{ sess=tx.objectStore('sessions'); }\n      if(!sess.indexNames.contains('student_id')) sess.createIndex('student_id','student_id',{unique:false});\n      if(!sess.indexNames.contains('created_at')) sess.createIndex('created_at','created_at',{unique:false});\n\n      // passages\n      if(!db.objectStoreNames.contains('passages')){ db.createObjectStore('passages',{keyPath:'no'}); }\n      // invites\n      if(!db.objectStoreNames.contains('invites')){ db.createObjectStore('invites',{keyPath:'token'}); }\n      // guardians\n      let g;\n      if(!db.objectStoreNames.contains('guardians')){\n        g=db.createObjectStore('guardians',{keyPath:'id',autoIncrement:true});\n      }else{ g=tx.objectStore('guardians'); }\n      if(!g.indexNames.contains('student_id')) g.createIndex('student_id','student_id',{unique:false});\n    };
     r.onsuccess=()=>{ db=r.result; res(); };
     r.onerror=()=>rej(r.error);
   });
 }
 function tx(name,mode='readonly'){ return db.transaction(name,mode).objectStore(name); }
 const idb = {
-  addStudent:(name,grade)=>new Promise((res,rej)=>{ const s={name,grade,created_at:Date.now()}; const r=tx('students','readwrite').add(s); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }),
+  addStudent:(obj)=>new Promise((res,rej)=>{ const s={...obj,created_at: obj.created_at||Date.now()}; const r=tx('students','readwrite').add(s); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }),
   delStudent:id=>new Promise((res,rej)=>{ const r=tx('students','readwrite').delete(id); r.onsuccess=()=>res(); r.onerror=()=>rej(r.error); }),
   listStudents:()=>new Promise((res,rej)=>{ const out=[]; const c=tx('students').openCursor(); c.onsuccess=e=>{ const cur=e.target.result; if(cur){ out.push({...cur.value,id:cur.primaryKey}); cur.continue(); } else res(out);}; c.onerror=()=>rej(c.error); }),
   savePassage:(no,title,text)=>new Promise((res,rej)=>{ const r=tx('passages','readwrite').put({no:String(no),title,text}); r.onsuccess=()=>res(); r.onerror=()=>rej(r.error); }),
@@ -646,7 +618,7 @@ async function init(){
   updateStudentBadge();
   if('serviceWorker' in navigator){
     const sw=`
-      self.addEventListener('install',e=>{ e.waitUntil(caches.open('oral-roles-v021').then(c=>c.addAll(['./']))); });
+      self.addEventListener('install',e=>{ e.waitUntil(caches.open('oral-roles-v022').then(c=>c.addAll(['./']))); });
       self.addEventListener('fetch',e=>{ e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))); });
     `;
     const blob=new Blob([sw],{type:'text/javascript'});
