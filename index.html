@@ -3,585 +3,658 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>音読評価 MVP v0.1.0</title>
+<title>音読評価 PWA（Roles） v0.2.0</title>
+<meta name="theme-color" content="#0b1020">
 <style>
 :root{
   --bg:#0b1020;--panel:#111827;--ink:#e6f1ff;--muted:#8aa0bf;--accent:#4f8cff;
   --ok:#20e3c2;--warn:#ffce3a;--bad:#ff6b6b;--shadow:0 10px 24px rgba(0,0,0,.45);
 }
 *{box-sizing:border-box}
-html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif}
-header{position:sticky;top:0;background:linear-gradient(180deg,rgba(0,0,0,.5),transparent),var(--panel);padding:10px 14px;box-shadow:var(--shadow);z-index:10}
-h1{margin:0;font-size:18px;letter-spacing:.3px}
-small.ver{color:var(--muted)}
-.wrapper{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:14px;max-width:1400px;margin:0 auto}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif}
+header{position:sticky;top:0;background:linear-gradient(180deg,rgba(0,0,0,.5),transparent),var(--panel);
+  padding:10px 14px;box-shadow:var(--shadow);z-index:50}
+h1{margin:0;font-size:18px}
+small.ver{color:var(--muted);margin-left:8px}
+.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#1e293b;color:#cfe6ff;border:1px solid #2a3a56;font-size:12px}
+.note{color:#9bb2d1;font-size:12px}
+.wrapper{display:grid;grid-template-columns:1fr;gap:16px;padding:14px;max-width:980px;margin:0 auto}
 .card{background:var(--panel);border:1px solid #1f2937;border-radius:16px;box-shadow:var(--shadow);padding:14px}
-.card h2{margin:2px 0 10px 0;font-size:16px}
+.card h2{margin:4px 0 10px 0;font-size:16px}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
 input,select,button,textarea{background:#0c1322;color:var(--ink);border:1px solid #233047;border-radius:12px;padding:10px 12px;font-size:14px}
-textarea{width:100%;min-height:160px;line-height:1.6}
+textarea{width:100%;min-height:120px;line-height:1.6}
 button{cursor:pointer}
 button.primary{background:var(--accent);border-color:#2f63d1}
 button.good{background:var(--ok);border-color:#17b79b;color:#06231d}
 button.warn{background:var(--warn);border-color:#b69200;color:#261e00}
 button.danger{background:#d44;border-color:#b22}
-label{font-size:13px;color:var(--muted)}
-.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#1e293b;color:#cfe6ff;border:1px solid #2a3a56;font-size:12px}
-.kbd{border:1px solid #334155;background:#0b1322;padding:2px 6px;border-radius:6px;font-size:12px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-hr{border:none;border-top:1px solid #203049;margin:12px 0}
 .table{width:100%;border-collapse:collapse}
 .table th,.table td{border-bottom:1px solid #24324a;padding:8px;font-size:13px}
-.mono{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace}
-ul.inline{display:flex;gap:8px;flex-wrap:wrap;padding:0;margin:0;list-style:none}
-.note{color:#9bb2d1;font-size:12px}
-.highlight-miss{background:#3a1020;color:#ffd7de;border-bottom:1px dashed #ff6b6b}
-.highlight-kanji{background:#13293a;color:#aee3ff;border-bottom:1px dashed #4f8cff}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.hidden{display:none!important}
+.kbd{border:1px solid #334155;background:#0b1322;padding:2px 6px;border-radius:6px;font-size:12px}
+hr{border:none;border-top:1px solid #203049;margin:12px 0}
 .flex{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 .right{margin-left:auto}
-.hidden{display:none !important}
+.tabnav{display:flex;gap:8px}
+a.tab{color:#cfe6ff;text-decoration:none;border:1px solid #2a3a56;border-radius:999px;padding:6px 10px}
+a.tab.active{background:#24324a}
+.hl-miss{background:#3a1020;color:#ffd7de;border-bottom:1px dashed #ff6b6b}
+canvas{background:#0b1322;border:1px solid #233047;border-radius:12px}
 </style>
 </head>
 <body>
 <header>
   <div class="flex">
     <div>
-      <h1>音読評価 MVP <small class="ver">v0.1.0</small></h1>
-      <div class="note">録音→ASR(Web Speech)→速度/CER→抑揚→誤読漢字→保存（IndexedDB）</div>
+      <h1>音読評価 PWA（ロール切替）<small class="ver">v0.2.0</small></h1>
+      <div class="note">#/s=生徒｜#/t=講師｜#/g=保護者（招待リンクから）｜?debug=1で画面内ログ</div>
     </div>
-    <div class="right">
-      <span class="badge">Beta / ローカル保存</span>
-      <span id="debugBadge" class="badge hidden">DEBUG</span>
-    </div>
+    <nav class="tabnav right">
+      <a id="tabS" href="#/s" class="tab">生徒</a>
+      <a id="tabT" href="#/t" class="tab">講師</a>
+      <a id="tabG" href="#/g" class="tab">保護者</a>
+      <span id="dbg" class="badge hidden">DEBUG</span>
+    </nav>
   </div>
 </header>
 
 <main class="wrapper">
-  <section class="card">
-    <h2>① 生徒・課題</h2>
+  <!-- 生徒 -->
+  <section id="viewS" class="card hidden">
+    <h2>生徒｜音読</h2>
     <div class="row">
-      <label>生徒：</label>
-      <select id="studentSelect"></select>
-      <button id="addStudentBtn">追加</button>
-      <input id="studentName" placeholder="氏名">
-      <select id="studentGrade">
-        <option value="小1">小1</option><option value="小2">小2</option><option value="小3">小3</option>
-        <option value="小4" selected>小4</option><option value="小5">小5</option><option value="小6">小6</option>
-      </select>
-      <label><input type="checkbox" id="saveAudioChk"> 音声を保存（重くなります）</label>
+      <span>この端末の生徒：</span>
+      <span id="studentBadge" class="badge">未設定</span>
+      <button id="setStudentBtn">生徒を設定</button>
     </div>
     <div class="row">
-      <label>課題タイトル：</label>
-      <input id="passageTitle" placeholder="例：春の川辺（小4）" style="flex:1">
+      <input id="textNo" placeholder="テキスト番号（例：1001）" inputmode="numeric" style="flex:1">
+      <button id="loadPassageBtn">読込</button>
     </div>
-    <textarea id="passageText"></textarea>
-    <div class="note">※ ふりがな（<ruby>漢字<rt>かんじ</rt></ruby>）付きでもOK。MVPでは**本文そのもの**を正解テキストとして比較します。</div>
-  </section>
-
-  <section class="card">
-    <h2>② 録音・認識</h2>
+    <textarea id="passageS"></textarea>
     <div class="row">
-      <button class="primary" id="startBtn">録音開始</button>
-      <button class="danger" id="stopBtn" disabled>停止</button>
+      <button id="startBtn" class="primary">録音開始</button>
+      <button id="stopBtn" class="danger" disabled>停止</button>
       <span id="recStatus" class="badge">準備OK</span>
     </div>
-    <div class="grid2">
-      <div>
-        <label>認識テキスト（ASR）</label>
-        <textarea id="asrText" class="mono" placeholder="ここに認識結果が入ります"></textarea>
-      </div>
-      <div>
-        <label>発話の波形／ピッチ（簡易）</label>
-        <canvas id="viz" width="600" height="140" style="width:100%;height:140px;background:#0b1322;border:1px solid #233047;border-radius:12px;"></canvas>
-        <div class="note">グラフは簡易可視化（上：波形, 下：F0点）</div>
-      </div>
-    </div>
-  </section>
-
-  <section class="card">
-    <h2>③ 採点・保存</h2>
     <div class="row">
-      <button class="good" id="analyzeBtn">採点する</button>
-      <button id="saveBtn" disabled>保存</button>
-      <button class="warn" id="downloadAudioBtn" disabled>音声DL</button>
+      <label>認識（自動）</label>
+      <textarea id="asrText" class="mono" placeholder="ここに認識結果が入ります"></textarea>
+    </div>
+    <canvas id="viz" width="600" height="120" style="width:100%;height:120px"></canvas>
+    <div class="row">
+      <button id="analyzeBtn" class="good">採点</button>
       <span id="scoreStatus" class="badge">未採点</span>
+      <button id="saveBtn" disabled>保存</button>
+      <button id="dlAudioBtn" class="warn" disabled>音声DL</button>
     </div>
-    <div id="resultArea">
-      <div class="grid2">
-        <div>
-          <h3>スコア</h3>
-          <ul class="inline">
-            <li><span class="badge">速度 <span id="speedCpm">-</span> 文字/分</span></li>
-            <li><span class="badge">CER <span id="cer">-</span></span></li>
-            <li><span class="badge">F0レンジ <span id="f0range">-</span> Hz</span></li>
-            <li><span class="badge">抑揚スコア <span id="prosodyScore">-</span>/20</span></li>
-            <li><span class="badge">総合 <span id="overall">-</span>/100</span></li>
-          </ul>
-          <div class="note">※ 総合= 正確さ40 + 抑揚20 + 速度20 + 理解度(今回は0) ＝ 暫定MVP</div>
-        </div>
-        <div>
-          <h3>誤読漢字（推定）</h3>
-          <div id="missKanjis" class="mono"></div>
-          <div class="note">※ CER整列から抽出。漢字の不一致文字を集計（MVP近似）。</div>
-        </div>
+    <div id="scoreBox">
+      <ul class="flex">
+        <li class="badge">速度 <b id="speedCpm">-</b> 文字/分</li>
+        <li class="badge">CER <b id="cer">-</b></li>
+        <li class="badge">F0レンジ <b id="f0range">-</b> Hz</li>
+        <li class="badge">抑揚 <b id="prosodyScore">-</b>/20</li>
+        <li class="badge">総合 <b id="overall">-</b>/100</li>
+      </ul>
+      <div style="margin-top:8px">
+        <b>誤読（推定）</b>：<span id="missKanjis" class="mono"></span>
       </div>
-      <hr>
-      <h3>整列ハイライト</h3>
-      <div><b>正解：</b> <span id="refHl"></span></div>
-      <div><b>読上：</b> <span id="hypHl"></span></div>
+    </div>
+    <hr>
+    <div><b>正解：</b> <span id="refHl"></span></div>
+    <div><b>読上：</b> <span id="hypHl"></span></div>
+  </section>
+
+  <!-- 講師 -->
+  <section id="viewT" class="card hidden">
+    <h2>講師｜管理・日次ダイジェスト</h2>
+
+    <div class="card" style="margin:-4px 0 10px 0">
+      <h3>1) 生徒管理</h3>
+      <div class="row">
+        <input id="studentName" placeholder="氏名">
+        <select id="studentGrade">
+          <option>小1</option><option>小2</option><option>小3</option>
+          <option selected>小4</option><option>小5</option><option>小6</option>
+        </select>
+        <button id="addStudentBtn" class="primary">生徒追加</button>
+      </div>
+      <div class="row">
+        <label>生徒一覧：</label>
+        <select id="studentList"></select>
+        <button id="delStudentBtn" class="danger">削除</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin:-4px 0 10px 0">
+      <h3>2) テキスト番号管理（本文ひも付け）</h3>
+      <div class="row">
+        <input id="textNoT" placeholder="番号（例：1001）" style="width:140px">
+        <input id="titleT" placeholder="タイトル（任意）" style="flex:1">
+        <button id="savePassageBtn" class="primary">保存/更新</button>
+      </div>
+      <textarea id="passageT" placeholder="本文（ふりがな可）"></textarea>
+      <div class="row">
+        <button id="listPassagesBtn">番号一覧を表示</button>
+        <button id="delPassageBtn" class="danger">削除</button>
+      </div>
+      <table class="table" id="passageTable"><thead><tr><th>番号</th><th>タイトル</th><th>先頭プレビュー</th></tr></thead><tbody></tbody></table>
+    </div>
+
+    <div class="card" style="margin:-4px 0 10px 0">
+      <h3>3) 保護者招待（マジックリンク作成 → メールに貼付）</h3>
+      <div class="row">
+        <label>対象生徒：</label>
+        <select id="guardianStudent"></select>
+        <input id="guardianMail" type="email" placeholder="保護者メール（任意）">
+        <button id="genInviteBtn" class="primary">招待リンク作成</button>
+      </div>
+      <div class="row">
+        <input id="inviteLink" placeholder="ここにリンクが表示されます" style="flex:1">
+        <button id="copyInviteBtn">コピー</button>
+        <a id="mailtoBtn" class="badge" href="#" target="_blank">メール作成</a>
+      </div>
+      <div class="note">※ 本MVPでは自動送信なし。作成したリンクをメールで送ってください。</div>
+    </div>
+
+    <div class="card" style="margin:-4px 0 10px 0">
+      <h3>4) 今日のダイジェスト</h3>
+      <div class="row"><button id="refreshTodayBtn">更新</button>
+        <button id="exportCsvBtn" class="warn">CSVエクスポート</button>
+      </div>
+      <table class="table" id="todayTable"><thead><tr>
+        <th>時刻</th><th>生徒</th><th>学年</th><th>番号</th><th>速度</th><th>CER</th><th>F0</th><th>総合</th>
+      </tr></thead><tbody></tbody></table>
+      <h4>誤読漢字ランキング（本日）</h4>
+      <div id="kanjiRankToday" class="mono"></div>
     </div>
   </section>
 
-  <section class="card">
-    <h2>④ 講師ビュー（履歴/CSV）</h2>
+  <!-- 保護者 -->
+  <section id="viewG" class="card hidden">
+    <h2>保護者｜本日の結果</h2>
+    <div id="guardianBind" class="note">招待リンクからアクセスすると、お子さまと連携されます。</div>
     <div class="row">
-      <button id="refreshListBtn">最新に更新</button>
-      <button id="exportCsvBtn">CSVエクスポート</button>
-      <span class="note">生徒で絞込み：上部の生徒選択</span>
+      <span>お子さま：</span> <span id="gStudent" class="badge">未連携</span>
+      <button id="gInstallBtn">ホーム画面に追加の手順</button>
     </div>
-    <table class="table" id="histTable">
-      <thead><tr>
-        <th>日時</th><th>生徒</th><th>学年</th><th>課題</th><th>速度(文字/分)</th><th>CER</th><th>F0範囲</th><th>総合</th>
-      </tr></thead>
-      <tbody></tbody>
-    </table>
+    <table class="table" id="gTable"><thead><tr>
+      <th>日時</th><th>番号</th><th>速度</th><th>CER</th><th>総合</th>
+    </tr></thead><tbody></tbody></table>
+    <div class="note">※ 音声は既定で保存しません（保護者同意時のみ保存ONにできます）。</div>
   </section>
 
   <section class="card">
     <h2>ログ</h2>
-    <pre id="log" class="mono" style="white-space:pre-wrap;max-height:180px;overflow:auto;"></pre>
+    <pre id="log" class="mono" style="white-space:pre-wrap;max-height:160px;overflow:auto"></pre>
   </section>
 </main>
 
 <script>
-/** ========= ユーティリティ ========= **/
-const qs = s=>document.querySelector(s);
-const qsa = s=>Array.from(document.querySelectorAll(s));
-const logEl = qs('#log');
+/* ======= 便利関数 ======= */
+const qs=s=>document.querySelector(s), qsa=s=>Array.from(document.querySelectorAll(s));
 const debug = new URLSearchParams(location.search).get('debug')==='1';
-if(debug) qs('#debugBadge').classList.remove('hidden');
-function log(...a){ if(debug){ logEl.textContent += a.join(' ') + "\\n"; logEl.scrollTop = logEl.scrollHeight; } }
-function nowStr(){ const d=new Date(); const z=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())} ${z(d.getHours())}:${z(d.getMinutes())}` }
+if(debug) qs('#dbg').classList.remove('hidden');
+function log(...a){ if(debug){ const el=qs('#log'); el.textContent+=a.join(' ')+"\\n"; el.scrollTop=el.scrollHeight; } }
+function z2(n){ return String(n).padStart(2,'0'); }
+function ymdhm(t){ const d=new Date(t); return `${d.getFullYear()}-${z2(d.getMonth()+1)}-${z2(d.getDate())} ${z2(d.getHours())}:${z2(d.getMinutes())}`; }
 function normalizeText(t){
   if(!t) return '';
-  // ふりがな(<rt>)除去、タグ除去、空白類削除、全角英数を半角化
-  t = t.replace(/<rt>.*?<\\/rt>/g,'').replace(/<[^>]+>/g,'');
+  t = t.replace(/<rt>.*?<\\/rt>/g,'').replace(/<[^>]+>/g,''); // ふりがな等を除去
   t = t.replace(/[\\s\\u3000]/g,'').replace(/[、，]/g,'、').replace(/[。．]/g,'。');
-  // 記号はおおむね無視
-  t = t.replace(/[「」『』（）()［］\\[\\]〈〉<>・… ,\\.\\-\\?\\!\\!！?]/g,'');
-  // 全角英数→半角
+  t = t.replace(/[「」『』（）()［］\\[\\]〈〉<>・… ,\\.\\-\\?\\!！?]/g,'');
   t = t.replace(/[Ａ-Ｚａ-ｚ０-９]/g,s=>String.fromCharCode(s.charCodeAt(0)-0xFEE0));
   return t;
 }
 function isKanji(ch){ return /[\\u4E00-\\u9FFF\\u3400-\\u4DBF]/.test(ch); }
 
-/** ========= IndexedDB ========= **/
-const DB_NAME='oral_reading_db_v1';
+/* ======= IndexedDB ======= */
+const DB='oral_roles_v02';
 let db;
 function openDB(){
   return new Promise((res,rej)=>{
-    const r = indexedDB.open(DB_NAME,1);
+    const r = indexedDB.open(DB,1);
     r.onupgradeneeded = e=>{
       const db=e.target.result;
       if(!db.objectStoreNames.contains('students')){
-        const s=db.createObjectStore('students', {keyPath:'id', autoIncrement:true});
+        const s=db.createObjectStore('students',{keyPath:'id',autoIncrement:true});
         s.createIndex('name','name',{unique:false});
       }
       if(!db.objectStoreNames.contains('sessions')){
-        const s=db.createObjectStore('sessions', {keyPath:'id', autoIncrement:true});
+        const s=db.createObjectStore('sessions',{keyPath:'id',autoIncrement:true});
         s.createIndex('student_id','student_id',{unique:false});
         s.createIndex('created_at','created_at',{unique:false});
+      }
+      if(!db.objectStoreNames.contains('passages')){
+        const s=db.createObjectStore('passages',{keyPath:'no'}); // no:string
+      }
+      if(!db.objectStoreNames.contains('invites')){
+        const s=db.createObjectStore('invites',{keyPath:'token'});
+      }
+      if(!db.objectStoreNames.contains('guardians')){
+        const s=db.createObjectStore('guardians',{keyPath:'id',autoIncrement:true});
+        s.createIndex('student_id','student_id',{unique:false});
       }
     };
     r.onsuccess=()=>{ db=r.result; res(); };
     r.onerror=()=>rej(r.error);
   });
 }
-function tx(store,mode='readonly'){ return db.transaction(store,mode).objectStore(store); }
-async function addStudent(name,grade){
-  const s={name,grade,created_at:Date.now()};
-  return new Promise((res,rej)=>{ const r=tx('students','readwrite').add(s); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); });
-}
-async function listStudents(){
-  return new Promise((res,rej)=>{
-    const out=[]; const req=tx('students').openCursor();
-    req.onsuccess=e=>{ const c=e.target.result; if(c){ out.push({...c.value,id:c.primaryKey}); c.continue(); } else res(out); };
-    req.onerror=()=>rej(req.error);
-  });
-}
-async function saveSession(sess){
-  return new Promise((res,rej)=>{ const r=tx('sessions','readwrite').add(sess); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); });
-}
-async function listSessions(studentId=null){
-  return new Promise((res,rej)=>{
+function tx(name,mode='readonly'){ return db.transaction(name,mode).objectStore(name); }
+const idb = {
+  addStudent:(name,grade)=>new Promise((res,rej)=>{ const s={name,grade,created_at:Date.now()}; const r=tx('students','readwrite').add(s); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }),
+  delStudent:id=>new Promise((res,rej)=>{ const r=tx('students','readwrite').delete(id); r.onsuccess=()=>res(); r.onerror=()=>rej(r.error); }),
+  listStudents:()=>new Promise((res,rej)=>{ const out=[]; const c=tx('students').openCursor(); c.onsuccess=e=>{ const cur=e.target.result; if(cur){ out.push({...cur.value,id:cur.primaryKey}); cur.continue(); } else res(out);}; c.onerror=()=>rej(c.error); }),
+  savePassage:(no,title,text)=>new Promise((res,rej)=>{ const r=tx('passages','readwrite').put({no:String(no),title,text}); r.onsuccess=()=>res(); r.onerror=()=>rej(r.error); }),
+  delPassage:no=>new Promise((res,rej)=>{ const r=tx('passages','readwrite').delete(String(no)); r.onsuccess=()=>res(); r.onerror=()=>rej(r.error); }),
+  getPassage:no=>new Promise((res,rej)=>{ const r=tx('passages').get(String(no)); r.onsuccess=()=>res(r.result||null); r.onerror=()=>rej(r.error); }),
+  listPassages:()=>new Promise((res,rej)=>{ const out=[]; const c=tx('passages').openCursor(); c.onsuccess=e=>{ const cur=e.target.result; if(cur){ out.push(cur.value); cur.continue(); } else res(out);}; c.onerror=()=>rej(c.error); }),
+  saveSession:s=>new Promise((res,rej)=>{ const r=tx('sessions','readwrite').add(s); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }),
+  listSessions:(studentId=null,startMs=null,endMs=null)=>new Promise((res,rej)=>{
     const out=[]; const store=tx('sessions');
     const req = studentId ? store.index('student_id').openCursor(IDBKeyRange.only(studentId)) : store.openCursor();
-    req.onsuccess=e=>{ const c=e.target.result; if(c){ out.push({...c.value,id:c.primaryKey}); c.continue(); } else res(out.sort((a,b)=>b.created_at-a.created_at)); };
+    req.onsuccess=e=>{ const cur=e.target.result; if(cur){
+      const v={...cur.value,id:cur.primaryKey};
+      if((startMs==null||v.created_at>=startMs)&&(endMs==null||v.created_at<endMs)) out.push(v);
+      cur.continue();
+    } else res(out.sort((a,b)=>b.created_at-a.created_at)); };
     req.onerror=()=>rej(req.error);
-  });
+  }),
+  saveInvite:(token,student_id,mail)=>new Promise((res,rej)=>{ const r=tx('invites','readwrite').put({token,student_id,mail,created_at:Date.now(),used:false}); r.onsuccess=()=>res(); r.onerror=()=>rej(r.error); }),
+  getInvite:token=>new Promise((res,rej)=>{ const r=tx('invites').get(token); r.onsuccess=()=>res(r.result||null); r.onerror=()=>rej(r.error); }),
+  useInvite:token=>new Promise((res,rej)=>{ const s=tx('invites','readwrite').get(token); s.onsuccess=()=>{ const inv=s.result; if(!inv) return res(false);
+      inv.used=true; tx('invites','readwrite').put(inv).onsuccess=()=>res(true); }; s.onerror=()=>rej(s.error); }),
+  addGuardian:(student_id)=>new Promise((res,rej)=>{ const r=tx('guardians','readwrite').add({student_id,created_at:Date.now()}); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }),
+  listGuardiansByStudent:(student_id)=>new Promise((res,rej)=>{ const out=[]; const c=tx('guardians').index('student_id').openCursor(IDBKeyRange.only(student_id)); c.onsuccess=e=>{ const cur=e.target.result; if(cur){ out.push({...cur.value,id:cur.primaryKey}); cur.continue(); } else res(out); }; c.onerror=()=>rej(c.error); }),
+};
+
+/* ======= ルーティング（#/s, #/t, #/g） ======= */
+function setActiveTab(){
+  const h=location.hash||'#/s';
+  qsa('a.tab').forEach(a=>a.classList.remove('active'));
+  if(h.startsWith('#/s')) qs('#tabS').classList.add('active');
+  else if(h.startsWith('#/t')) qs('#tabT').classList.add('active');
+  else if(h.startsWith('#/g')) qs('#tabG').classList.add('active');
+
+  qs('#viewS').classList.toggle('hidden', !h.startsWith('#/s'));
+  qs('#viewT').classList.toggle('hidden', !h.startsWith('#/t'));
+  qs('#viewG').classList.toggle('hidden', !h.startsWith('#/g'));
+
+  if(h.startsWith('#/t')) refreshTeacher();
+  if(h.startsWith('#/g')) initGuardianFromToken();
 }
+window.addEventListener('hashchange', setActiveTab);
 
-/** ========= 音声・ASR（Web Speech API） ========= **/
-let mediaStream, audioCtx, procNode, analyser, gainNode, recorder, recChunks=[], drawing=false;
-let asr, asrText='', asrActive=false;
-let startedAt=0, voicedMs=0, totalMs=0, f0Stats={vals:[], min:9999, max:0, mean:0, sd:0};
+/* ======= 生徒：録音/ASR/採点 ======= */
+let mediaStream, audioCtx, analyser, procNode, recorder, recChunks=[], asr, asrActive=false;
+let startedAt=0, voicedMs=0, f0Stats={vals:[],min:9999,max:0};
 
-const vizCanvas = qs('#viz'); const vctx = vizCanvas.getContext('2d');
+const viz = qs('#viz'); const vctx = viz.getContext('2d');
+
 function drawViz(timeData, f0){
-  const w=vizCanvas.width, h=vizCanvas.height;
+  const w=viz.width,h=viz.height;
   vctx.fillStyle='#0b1322'; vctx.fillRect(0,0,w,h);
-  // 波形
   vctx.strokeStyle='#88aaff'; vctx.beginPath();
-  const len=timeData.length;
-  for(let i=0;i<len;i++){
-    const x=i/len*w; const y=(timeData[i]/128)*0.45*h + 0.25*h;
+  for(let i=0;i<timeData.length;i++){
+    const x=i/timeData.length*w; const y=(timeData[i]/128)*0.45*h + 0.25*h;
     if(i===0) vctx.moveTo(x,y); else vctx.lineTo(x,y);
   }
   vctx.stroke();
-  // F0点群
   vctx.fillStyle='#20e3c2';
   f0.slice(-60).forEach((hz,idx)=>{
-    if(hz>0){ const x = w - (60-idx)* (w/60); const y = 0.75*h + (1 - Math.min(hz,500)/500)*0.25*h;
+    if(hz>0){ const x = w - (60-idx)*(w/60); const y = 0.75*h + (1 - Math.min(hz,500)/500)*0.25*h;
       vctx.beginPath(); vctx.arc(x,y,2,0,Math.PI*2); vctx.fill();
     }
   });
 }
-
-function startASR(){
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if(!SR){ alert('このブラウザはWeb Speech APIに未対応です。Chromeをお試しください。'); return false; }
-  asr = new SR();
-  asr.lang='ja-JP'; asr.interimResults=true; asr.continuous=true;
-  asr.onresult = e=>{
-    let tmp=''; for(let i=e.resultIndex;i<e.results.length;i++){
-      const r=e.results[i]; if(r.isFinal) asrText += r[0].transcript;
-      else tmp += r[0].transcript;
-    }
-    qs('#asrText').value = asrText + tmp;
-  };
-  asr.onerror = e=>{ log('ASR error', e.error); };
-  asr.onend = ()=>{ asrActive=false; };
-  asr.start(); asrActive=true; return true;
-}
-
-function autocorrF0(buf, sampleRate){
-  // 簡易ACF/YIN風（MVP）。人声想定：70–500Hz
-  const minLag = Math.floor(sampleRate/500), maxLag = Math.floor(sampleRate/70);
-  let bestLag=0, bestCorr=0;
+function autocorrF0(buf, sr){
+  const minLag=Math.floor(sr/500), maxLag=Math.floor(sr/70);
+  let bestLag=0,best=0;
   for(let lag=minLag; lag<=maxLag; lag++){
-    let corr=0;
-    for(let i=0;i<buf.length-lag;i++){ corr += buf[i]*buf[i+lag]; }
-    if(corr>bestCorr){ bestCorr=corr; bestLag=lag; }
+    let c=0; for(let i=0;i<buf.length-lag;i++) c+=buf[i]*buf[i+lag];
+    if(c>best){ best=c; bestLag=lag; }
   }
-  if(bestLag===0||bestCorr<1e-3) return 0;
-  return sampleRate/bestLag;
+  if(bestLag===0||best<1e-3) return 0;
+  return sr/bestLag;
 }
 
 async function startRec(){
   mediaStream = await navigator.mediaDevices.getUserMedia({audio:true});
-  // MediaRecorder for audio download
-  recChunks=[]; recorder = new MediaRecorder(mediaStream);
-  recorder.ondataavailable = e=>{ if(e.data.size>0) recChunks.push(e.data); };
+  recorder = new MediaRecorder(mediaStream);
+  recChunks=[]; recorder.ondataavailable=e=>{ if(e.data.size>0) recChunks.push(e.data); };
   recorder.start();
 
   audioCtx = new (window.AudioContext||window.webkitAudioContext)();
   const src = audioCtx.createMediaStreamSource(mediaStream);
   analyser = audioCtx.createAnalyser(); analyser.fftSize=1024;
-  gainNode = audioCtx.createGain(); gainNode.gain.value=1.0;
-  const bufferLen=1024;
-  // ScriptProcessorは非推奨だがMVPでは簡易採用
-  procNode = audioCtx.createScriptProcessor(bufferLen,1,1);
-  const timeBuf = new Uint8Array(analyser.fftSize);
-  const f0Arr = f0Stats.vals;
 
-  startedAt = performance.now(); voicedMs = 0; totalMs = 0; f0Stats.vals=[]; f0Stats.min=9999; f0Stats.max=0;
+  procNode = audioCtx.createScriptProcessor(1024,1,1);
+  const timeBuf = new Uint8Array(analyser.fftSize); const f0Arr=f0Stats.vals=[]; f0Stats.min=9999; f0Stats.max=0;
+  startedAt = performance.now(); voicedMs=0;
 
   procNode.onaudioprocess = e=>{
     const ch = e.inputBuffer.getChannelData(0);
-    // RMSで有声判定
-    let rms=0; for(let i=0;i<ch.length;i++){ rms += ch[i]*ch[i]; }
-    rms = Math.sqrt(rms/ch.length);
-    const frameMs = (ch.length/audioCtx.sampleRate)*1000;
-    totalMs += frameMs;
-    let f0=0;
-    if(rms>0.01){ // 簡易VAD閾値
-      voicedMs += frameMs;
-      f0 = autocorrF0(ch, audioCtx.sampleRate);
-      if(f0>60 && f0<500){
+    let rms=0; for(let i=0;i<ch.length;i++) rms+=ch[i]*ch[i];
+    rms=Math.sqrt(rms/ch.length);
+    if(rms>0.01){
+      voicedMs += (ch.length/audioCtx.sampleRate)*1000;
+      const f0=autocorrF0(ch,audioCtx.sampleRate);
+      if(f0>60&&f0<500){
         f0Arr.push(f0);
         if(f0<f0Stats.min) f0Stats.min=f0;
         if(f0>f0Stats.max) f0Stats.max=f0;
       }else f0Arr.push(0);
-    }else{
-      f0Arr.push(0);
-    }
-    // 可視化
+    }else f0Arr.push(0);
     analyser.getByteTimeDomainData(timeBuf);
-    drawViz(timeBuf, f0Arr);
+    drawViz(timeBuf,f0Arr);
   };
-  src.connect(analyser); analyser.connect(gainNode); gainNode.connect(procNode); procNode.connect(audioCtx.destination);
-  log('rec start');
+  src.connect(analyser); analyser.connect(procNode); procNode.connect(audioCtx.destination);
+  qs('#recStatus').textContent='録音中…';
 }
-
 async function stopRec(){
   recorder && recorder.state!=='inactive' && recorder.stop();
   mediaStream && mediaStream.getTracks().forEach(t=>t.stop());
-  procNode && procNode.disconnect(); gainNode && gainNode.disconnect(); analyser && analyser.disconnect();
+  procNode && procNode.disconnect(); analyser && analyser.disconnect();
   audioCtx && audioCtx.close();
-  asrActive && asr && asr.stop();
-  log('rec stop');
+  qs('#recStatus').textContent='停止';
 }
 
-/** ========= 採点（CER・整列・速度・抑揚） ========= **/
-function levenshteinAlign(a,b){
-  const n=a.length, m=b.length;
-  const dp=Array.from({length:n+1},()=>Array(m+1).fill(0));
-  for(let i=0;i<=n;i++) dp[i][0]=i;
-  for(let j=0;j<=m;j++) dp[0][j]=j;
-  for(let i=1;i<=n;i++){
-    for(let j=1;j<=m;j++){
-      const cost = a[i-1]===b[j-1]?0:1;
-      dp[i][j]=Math.min(dp[i-1][j]+1, dp[i][j-1]+1, dp[i-1][j-1]+cost);
+function startASR(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){ alert('このブラウザはWeb Speech APIに未対応です。Chromeをお試しください。'); return false; }
+  asr = new SR(); asr.lang='ja-JP'; asr.interimResults=true; asr.continuous=true;
+  let asrText=''; const area=qs('#asrText');
+  asr.onresult = e=>{
+    let tmp=''; for(let i=e.resultIndex;i<e.results.length;i++){
+      const r=e.results[i]; if(r.isFinal) asrText += r[0].transcript; else tmp += r[0].transcript;
     }
+    area.value = asrText + tmp;
+  };
+  asr.onend=()=>{ asrActive=false; };
+  asr.start(); asrActive=true; return true;
+}
+
+function levenshteinAlign(a,b){
+  const n=a.length,m=b.length,dp=Array.from({length:n+1},()=>Array(m+1).fill(0));
+  for(let i=0;i<=n;i++) dp[i][0]=i; for(let j=0;j<=m;j++) dp[0][j]=j;
+  for(let i=1;i<=n;i++) for(let j=1;j<=m;j++){
+    const cost=a[i-1]===b[j-1]?0:1;
+    dp[i][j]=Math.min(dp[i-1][j]+1,dp[i][j-1]+1,dp[i-1][j-1]+cost);
   }
-  // backtrack
-  let i=n,j=m; const ops=[];
-  while(i>0 || j>0){
+  let i=n,j=m,ops=[];
+  while(i>0||j>0){
     if(i>0 && dp[i][j]===dp[i-1][j]+1){ ops.push({op:'del',ref:a[i-1],hyp:''}); i--; }
     else if(j>0 && dp[i][j]===dp[i][j-1]+1){ ops.push({op:'ins',ref:'',hyp:b[j-1]}); j--; }
-    else{ const op=(a[i-1]===b[j-1])?'eq':'sub'; ops.push({op,ref:a[i-1],hyp:b[j-1]}); i--; j--; }
+    else { const op=(a[i-1]===b[j-1])?'eq':'sub'; ops.push({op,ref:a[i-1],hyp:b[j-1]}); i--; j--; }
   }
-  ops.reverse();
-  return {dist:dp[n][m], ops};
+  ops.reverse(); return {dist:dp[n][m],ops};
 }
 function highlightAlign(ops){
-  let refHtml='', hypHtml='';
+  let refHtml='',hypHtml='';
   for(const o of ops){
-    if(o.op==='eq'){
-      refHtml += `<span>${o.ref}</span>`;
-      hypHtml += `<span>${o.hyp}</span>`;
-    }else if(o.op==='sub'){
-      refHtml += `<span class="highlight-miss">${o.ref}</span>`;
-      hypHtml += `<span class="highlight-miss">${o.hyp}</span>`;
-    }else if(o.op==='del'){
-      refHtml += `<span class="highlight-miss">${o.ref}</span>`;
-      hypHtml += `<span>∅</span>`;
-    }else if(o.op==='ins'){
-      refHtml += `<span>∅</span>`;
-      hypHtml += `<span class="highlight-miss">${o.hyp}</span>`;
-    }
+    if(o.op==='eq'){ refHtml+=`<span>${o.ref}</span>`; hypHtml+=`<span>${o.hyp}</span>`; }
+    else if(o.op==='sub'){ refHtml+=`<span class="hl-miss">${o.ref}</span>`; hypHtml+=`<span class="hl-miss">${o.hyp}</span>`; }
+    else if(o.op==='del'){ refHtml+=`<span class="hl-miss">${o.ref}</span>`; hypHtml+=`<span>∅</span>`; }
+    else if(o.op==='ins'){ refHtml+=`<span>∅</span>`; hypHtml+=`<span class="hl-miss">${o.hyp}</span>`; }
   }
   return {refHtml,hypHtml};
 }
-function arrayMean(a){ if(!a.length) return 0; return a.reduce((x,y)=>x+y,0)/a.length; }
-function arraySd(a){ const m=arrayMean(a.filter(x=>x>0)); const v=arrayMean(a.filter(x=>x>0).map(x=>(x-m)*(x-m))); return Math.sqrt(v||0); }
+function arrMean(a){ if(!a.length) return 0; return a.reduce((x,y)=>x+y,0)/a.length; }
+function arrSdPos(a){ const v=a.filter(x=>x>0); const m=arrMean(v); const s=arrMean(v.map(x=>(x-m)*(x-m))); return Math.sqrt(s||0); }
 
-function analyzeAll(){
-  const refRaw = qs('#passageText').value.trim();
-  const hypRaw = qs('#asrText').value.trim();
-  if(!refRaw || !hypRaw){ alert('課題文と認識テキストの両方が必要です。'); return null; }
+function analyzeAll(refRaw,hypRaw,voicedMsLocal,f0){
+  const ref=normalizeText(refRaw), hyp=normalizeText(hypRaw);
+  const {dist,ops}=levenshteinAlign(ref.split(''),hyp.split(''));
+  const cer=(ref.length?dist/ref.length:1);
+  const missKanji={};
+  ops.forEach(o=>{ if((o.op==='sub'||o.op==='del') && isKanji(o.ref)) missKanji[o.ref]=(missKanji[o.ref]||0)+1; });
+  const missList=Object.entries(missKanji).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${k}:${v}`);
 
-  const ref = normalizeText(refRaw);
-  const hyp = normalizeText(hypRaw);
+  const minutes=Math.max(1e-6, voicedMsLocal/60000);
+  const cpm=Math.round(hyp.length/minutes);
 
-  const {dist, ops} = levenshteinAlign(ref.split(''), hyp.split(''));
-  const cer = (ref.length>0)? (dist/ref.length) : 1;
+  const f0min=Math.round((f0.min===9999)?0:f0.min), f0max=Math.round(f0.max||0);
+  const f0range=(f0max>0&&f0min>0)?(f0max-f0min):0, f0sd=Math.round(arrSdPos(f0.vals));
+  let prosody=0;
+  if(f0range>40) prosody+=10; else if(f0range>20) prosody+=6; else if(f0range>10) prosody+=3;
+  if(f0sd>30) prosody+=10; else if(f0sd>15) prosody+=6; else if(f0sd>8) prosody+=3;
+  prosody=Math.min(20,prosody);
 
-  // 誤読漢字（ref側で一致しなかった漢字を抽出）
-  const missKanji = {};
-  ops.forEach(o=>{
-    if((o.op==='sub'||o.op==='del') && isKanji(o.ref)) missKanji[o.ref] = (missKanji[o.ref]||0)+1;
-  });
-  const missList = Object.entries(missKanji).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${k}:${v}`);
+  let acc=Math.max(0,40*(1-cer));
+  let spd=0; if(cpm>=180&&cpm<=300) spd=20; else if(cpm<180) spd=Math.max(0,20*(cpm/180)); else spd=Math.max(0,20*(1-(cpm-300)/300));
+  const overall=Math.round(acc+prosody+spd);
+  const {refHtml,hypHtml}=highlightAlign(ops);
 
-  // 速度：正味発話時間（voicedMs）でhyp文字数/分
-  const minutes = Math.max(1e-6, voicedMs/60000);
-  const cpm = Math.round(hyp.length / minutes);
-
-  // 抑揚：F0範囲・分散からスコア（0〜20）
-  const f0v = f0Stats.vals.filter(x=>x>0);
-  const f0min = f0Stats.min===9999?0:Math.round(f0Stats.min);
-  const f0max = Math.round(f0Stats.max||0);
-  const f0range = (f0max>0 && f0min>0)? (f0max - f0min) : 0;
-  const f0sd = Math.round(arraySd(f0Stats.vals));
-
-  let prosodyScore = 0;
-  // レンジとSDが程よいほど高得点。しきい値は仮。
-  if(f0range>40) prosodyScore += 10; else if(f0range>20) prosodyScore += 6; else if(f0range>10) prosodyScore += 3;
-  if(f0sd>30) prosodyScore += 10; else if(f0sd>15) prosodyScore += 6; else if(f0sd>8) prosodyScore += 3;
-  prosodyScore = Math.min(20, prosodyScore);
-
-  // 正確さスコア（0〜40）：CERに基づく
-  let accScore = Math.max(0, 40 * (1 - cer)); // 単純化
-  // 速度スコア（0〜20）：180〜300文字/分で満点、外れると逓減（仮）
-  let speedScore = 0;
-  if(cpm>=180 && cpm<=300) speedScore = 20;
-  else if(cpm<180) speedScore = Math.max(0, 20 * (cpm/180));
-  else speedScore = Math.max(0, 20 * (1 - (cpm-300)/300)); // 300超は下げる
-
-  const overall = Math.round(accScore + prosodyScore + speedScore); // 理解度は次版
-
-  // ハイライト
-  const {refHtml,hypHtml} = highlightAlign(ops);
-
-  // 表示更新
-  qs('#cer').textContent = cer.toFixed(3);
-  qs('#speedCpm').textContent = cpm;
-  qs('#f0range').textContent = f0range;
-  qs('#prosodyScore').textContent = prosodyScore.toFixed(1);
-  qs('#overall').textContent = overall;
-  qs('#missKanjis').textContent = missList.join('　');
-  qs('#refHl').innerHTML = refHtml;
-  qs('#hypHl').innerHTML = hypHtml;
-  qs('#scoreStatus').textContent = '採点済み';
-  qs('#saveBtn').disabled = false;
-
-  return {
-    cpm, cer:Number(cer.toFixed(3)), f0range, prosodyScore:Number(prosodyScore.toFixed(1)),
-    overall, missKanji, refRaw, hypRaw
-  };
+  return {cpm,cer:Number(cer.toFixed(3)),f0range,prosodyScore:prosody,overall,missKanji,missList,refHtml,hypHtml};
 }
 
-/** ========= UIイベント ========= **/
-let currentStudentId=null, currentStudent={};
-let lastBlob=null, lastScores=null;
-
-async function refreshStudents(){
-  const list = await listStudents();
-  const sel = qs('#studentSelect'); sel.innerHTML='';
-  list.forEach(s=>{
-    const opt=document.createElement('option'); opt.value=s.id; opt.textContent=`${s.name}（${s.grade}）`;
-    sel.appendChild(opt);
-  });
-  if(list.length){
-    sel.value = sel.options[0].value; currentStudentId = Number(sel.value);
-    currentStudent = list.find(x=>x.id===currentStudentId) || {};
-  }
-}
-async function refreshHistory(){
-  const tbody=qs('#histTable tbody'); tbody.innerHTML='';
-  const sid = currentStudentId?Number(currentStudentId):null;
-  const rows = await listSessions(sid);
-  rows.forEach(r=>{
-    const tr=document.createElement('tr');
-    const dt=new Date(r.created_at);
-    const z=n=>String(n).padStart(2,'0'); const dstr=`${dt.getFullYear()}-${z(dt.getMonth()+1)}-${z(dt.getDate())} ${z(dt.getHours())}:${z(dt.getMinutes())}`;
-    tr.innerHTML = `<td>${dstr}</td><td>${r.student_name}</td><td>${r.student_grade}</td><td>${r.passage_title}</td>
-      <td>${r.cpm}</td><td>${r.cer}</td><td>${r.f0range}</td><td>${r.overall}</td>`;
-    tbody.appendChild(tr);
+/* ======= 生徒UIロジック ======= */
+let currentStudentId = Number(localStorage.getItem('student_id')||0);
+function updateStudentBadge(){
+  if(!currentStudentId) { qs('#studentBadge').textContent='未設定'; return; }
+  idb.listStudents().then(l=>{
+    const st=l.find(x=>x.id===currentStudentId);
+    qs('#studentBadge').textContent = st ? `${st.name}（${st.grade}）` : '未設定';
   });
 }
-
-function exportCsv(rows){
-  const hdr = ['datetime','student','grade','title','cpm','cer','f0range','prosody','overall','miss_kanji_json'];
-  const lines = [hdr.join(',')];
-  for(const r of rows){
-    const dt=new Date(r.created_at).toISOString();
-    const miss = JSON.stringify(r.miss_kanji || {});
-    const vals=[dt,r.student_name,r.student_grade,r.passage_title,r.cpm,r.cer,r.f0range,r.prosodyScore,r.overall,miss]
-      .map(v=>`"${String(v).replace(/"/g,'""')}"`);
-    lines.push(vals.join(','));
-  }
-  const blob=new Blob([lines.join('\\n')],{type:'text/csv'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='oral_reading_history.csv'; a.click();
+async function chooseStudent(){
+  const list=await idb.listStudents();
+  if(!list.length){ alert('まず講師画面（#/t）で生徒を追加してください。'); return; }
+  const name=prompt('生徒名を選んで入力してください\\n' + list.map(s=>`・${s.name}（${s.grade}）`).join('\\n'));
+  const found=list.find(s=>s.name===name);
+  if(!found){ alert('見つかりませんでした'); return; }
+  currentStudentId=found.id; localStorage.setItem('student_id',String(currentStudentId));
+  updateStudentBadge();
 }
 
-function setRecUi(active){
-  qs('#startBtn').disabled = active;
-  qs('#stopBtn').disabled = !active;
-  qs('#downloadAudioBtn').disabled = true;
-  qs('#saveBtn').disabled = true;
-  qs('#recStatus').textContent = active?'録音中…':'準備OK';
+/* ======= テキスト番号 ======= */
+async function loadPassageByNo(no, into){
+  const p = await idb.getPassage(no);
+  if(!p){ alert('登録されていない番号です'); return; }
+  into.value = p.text;
+  qs('#passageS')===into && (qs('#passageS').scrollTop=0);
 }
 
-async function init(){
-  await openDB();
-  await refreshStudents();
-  // デフォ生徒が居なければダミー作成
-  if(!currentStudentId){
-    const id = await addStudent('体験 太郎','小4');
-    await refreshStudents();
-    currentStudentId = id;
-  }
+/* ======= 画面イベント（生徒） ======= */
+qs('#setStudentBtn').onclick = chooseStudent;
+qs('#loadPassageBtn').onclick = ()=>{ const no=qs('#textNo').value.trim(); if(no) loadPassageByNo(no,qs('#passageS')); };
 
-  // サンプル課題
-  qs('#passageTitle').value = '春の川辺（小4）';
-  qs('#passageText').value = `春の川辺を歩くと、冷たい風の中にも、少しずつあたたかさが感じられます。土手の草むらには、小さな花が顔を出し、川の流れはきらきらと光っています。ぼくは、遠くで鳴く鳥の声を聞きながら、ゆっくりと足もとを確かめて歩きました。`;
-
-  // PWA（同一ファイル内Service Worker）
-  if('serviceWorker' in navigator){
-    const swCode = \`
-      self.addEventListener('install',e=>{ e.waitUntil(caches.open('oral-mvp-v1').then(c=>c.addAll(['./']))); });
-      self.addEventListener('fetch',e=>{ e.respondWith(caches.match(e.request).then(r=>r || fetch(e.request))); });
-    \`;
-    const blob=new Blob([swCode],{type:'text/javascript'});
-    const swUrl=URL.createObjectURL(blob);
-    try{ await navigator.serviceWorker.register(swUrl); log('SW registered'); }catch(e){ log('SW fail', e); }
-  }
-}
-
-qs('#addStudentBtn').onclick = async ()=>{
-  const name = qs('#studentName').value.trim();
-  const grade = qs('#studentGrade').value;
-  if(!name){ alert('生徒名を入力してください'); return; }
-  await addStudent(name,grade);
-  qs('#studentName').value='';
-  await refreshStudents();
-};
-qs('#studentSelect').onchange = e=>{
-  currentStudentId = Number(e.target.value);
-};
 qs('#startBtn').onclick = async ()=>{
-  setRecUi(true);
-  asrText=''; qs('#asrText').value='';
+  qs('#startBtn').disabled=true; qs('#stopBtn').disabled=false; qs('#saveBtn').disabled=true; qs('#dlAudioBtn').disabled=true;
   await startRec();
   const ok = startASR();
-  if(!ok){ setRecUi(false); return; }
+  if(!ok){ qs('#startBtn').disabled=false; qs('#stopBtn').disabled=true; }
 };
 qs('#stopBtn').onclick = async ()=>{
   await stopRec();
-  setRecUi(false);
-  // 音声DL用
-  lastBlob = new Blob(recChunks,{type:'audio/webm'});
-  qs('#downloadAudioBtn').disabled = false;
+  qs('#startBtn').disabled=false; qs('#stopBtn').disabled=true; qs('#dlAudioBtn').disabled=false;
 };
-qs('#downloadAudioBtn').onclick = ()=>{
-  if(!lastBlob) return;
-  const a=document.createElement('a'); a.href=URL.createObjectURL(lastBlob); a.download=`reading_${Date.now()}.webm`; a.click();
+qs('#dlAudioBtn').onclick = ()=>{
+  if(!recChunks.length) return;
+  const blob=new Blob(recChunks,{type:'audio/webm'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`reading_${Date.now()}.webm`; a.click();
 };
 qs('#analyzeBtn').onclick = ()=>{
-  lastScores = analyzeAll();
-  if(!lastScores) return;
-};
-qs('#saveBtn').onclick = async ()=>{
-  if(!lastScores){ alert('まず採点してください'); return; }
-  const students = await listStudents();
-  const st = students.find(s=>s.id===currentStudentId) || {name:'-',grade:'-'};
-  const sess = {
-    created_at: Date.now(),
-    student_id: currentStudentId,
-    student_name: st.name,
-    student_grade: st.grade,
-    passage_title: qs('#passageTitle').value.trim()||'(無題)',
-    cpm: lastScores.cpm, cer: lastScores.cer, f0range: lastScores.f0range,
-    prosodyScore: lastScores.prosodyScore, overall: lastScores.overall,
-    miss_kanji: lastScores.missKanji,
-    ref_text: lastScores.refRaw, hyp_text: lastScores.hypRaw,
-    audio_blob: (qs('#saveAudioChk').checked && lastBlob)? lastBlob : null
+  const refRaw=qs('#passageS').value.trim(); const hypRaw=qs('#asrText').value.trim();
+  if(!refRaw||!hypRaw){ alert('本文と認識結果が必要です'); return; }
+  const r=analyzeAll(refRaw,hypRaw,voicedMs,f0Stats);
+  qs('#speedCpm').textContent=r.cpm; qs('#cer').textContent=r.cer; qs('#f0range').textContent=r.f0range;
+  qs('#prosodyScore').textContent=r.prosodyScore; qs('#overall').textContent=r.overall;
+  qs('#missKanjis').textContent=r.missList.join('　'); qs('#refHl').innerHTML=r.refHtml; qs('#hypHl').innerHTML=r.hypHtml;
+  qs('#scoreStatus').textContent='採点済み'; qs('#saveBtn').disabled=false;
+  qs('#saveBtn').onclick = async ()=>{
+    if(!currentStudentId){ alert('この端末の生徒を設定してください'); return; }
+    const no = qs('#textNo').value.trim()||'';
+    const row={
+      created_at:Date.now(), student_id:currentStudentId, text_no:no,
+      cpm:r.cpm, cer:r.cer, f0range:r.f0range, prosodyScore:r.prosodyScore, overall:r.overall,
+      miss_kanji:r.missKanji
+    };
+    await idb.saveSession(row);
+    qs('#scoreStatus').textContent='保存済み';
+    alert('保存しました');
   };
-  await saveSession(sess);
-  qs('#scoreStatus').textContent='保存済み';
-  await refreshHistory();
-};
-qs('#refreshListBtn').onclick = refreshHistory;
-qs('#exportCsvBtn').onclick = async ()=>{
-  const sid = currentStudentId?Number(currentStudentId):null;
-  const rows = await listSessions(sid);
-  exportCsv(rows);
 };
 
-// 初期化
-init().then(()=>{ log('ready'); });
+/* ======= 講師UI ======= */
+async function refreshTeacher(){
+  // 生徒一覧
+  const list=await idb.listStudents();
+  const sel=qs('#studentList'); sel.innerHTML='';
+  list.forEach(s=>{ const o=document.createElement('option'); o.value=s.id; o.textContent=`${s.name}（${s.grade}）`; sel.appendChild(o); });
+  const gs=qs('#guardianStudent'); gs.innerHTML='';
+  list.forEach(s=>{ const o=document.createElement('option'); o.value=s.id; o.textContent=`${s.name}（${s.grade}）`; gs.appendChild(o); });
+  // 今日のダイジェスト
+  await refreshToday();
+  // 番号一覧
+  await listPassages();
+}
+qs('#addStudentBtn').onclick = async ()=>{
+  const name=qs('#studentName').value.trim(); const grade=qs('#studentGrade').value;
+  if(!name) return alert('氏名を入れてください');
+  await idb.addStudent(name,grade);
+  qs('#studentName').value=''; await refreshTeacher();
+};
+qs('#delStudentBtn').onclick = async ()=>{
+  const id=Number(qs('#studentList').value||0); if(!id) return;
+  if(!confirm('この生徒を削除しますか（履歴は残ります）？')) return;
+  await idb.delStudent(id); await refreshTeacher();
+};
+
+/* passages */
+async function listPassages(){
+  const t=qs('#passageTable tbody'); t.innerHTML='';
+  const rows=await idb.listPassages();
+  rows.sort((a,b)=>String(a.no).localeCompare(String(b.no)));
+  rows.forEach(r=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${r.no}</td><td>${r.title||''}</td><td>${(r.text||'').slice(0,22)}…</td>`;
+    tr.onclick=()=>{ qs('#textNoT').value=r.no; qs('#titleT').value=r.title||''; qs('#passageT').value=r.text||''; };
+    t.appendChild(tr);
+  });
+}
+qs('#savePassageBtn').onclick = async ()=>{
+  const no=qs('#textNoT').value.trim(); const title=qs('#titleT').value.trim(); const text=qs('#passageT').value.trim();
+  if(!no||!text) return alert('番号と本文を入れてください');
+  await idb.savePassage(no,title,text); await listPassages(); alert('保存/更新しました');
+};
+qs('#delPassageBtn').onclick = async ()=>{
+  const no=qs('#textNoT').value.trim(); if(!no) return;
+  if(!confirm('削除しますか？')) return;
+  await idb.delPassage(no); await listPassages();
+};
+qs('#listPassagesBtn').onclick = listPassages;
+
+/* 今日の集計 */
+async function refreshToday(){
+  const today=new Date(); today.setHours(0,0,0,0);
+  const start=today.getTime(), end=start+86400000;
+  const rows=await idb.listSessions(null,start,end);
+  const t=qs('#todayTable tbody'); t.innerHTML='';
+  const students=await idb.listStudents(); const sMap=new Map(students.map(s=>[s.id,s]));
+  const aggKanji={};
+  rows.forEach(r=>{
+    const st=sMap.get(r.student_id)||{name:'?',grade:'?'};
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${ymdhm(r.created_at)}</td><td>${st.name}</td><td>${st.grade}</td><td>${r.text_no||''}</td>
+      <td>${r.cpm}</td><td>${r.cer}</td><td>${r.f0range}</td><td>${r.overall}</td>`;
+    t.appendChild(tr);
+    for(const k in (r.miss_kanji||{})){ aggKanji[k]=(aggKanji[k]||0)+r.miss_kanji[k]; }
+  });
+  const rank = Object.entries(aggKanji).sort((a,b)=>b[1]-a[1]).slice(0,20).map(([k,v])=>`${k}:${v}`);
+  qs('#kanjiRankToday').textContent = rank.join('　');
+}
+qs('#refreshTodayBtn').onclick = refreshToday;
+qs('#exportCsvBtn').onclick = async ()=>{
+  const rows=await idb.listSessions();
+  const hdr=['datetime','student','grade','text_no','cpm','cer','f0range','prosody','overall','miss_kanji_json'];
+  const students=await idb.listStudents(); const sMap=new Map(students.map(s=>[s.id,s]));
+  const lines=[hdr.join(',')];
+  rows.forEach(r=>{
+    const st=sMap.get(r.student_id)||{name:'?',grade:'?'};
+    const miss=JSON.stringify(r.miss_kanji||{});
+    const vals=[new Date(r.created_at).toISOString(),st.name,st.grade,r.text_no||'',r.cpm,r.cer,r.f0range,r.prosodyScore,r.overall,miss]
+      .map(v=>`"${String(v).replace(/"/g,'""')}"`);
+    lines.push(vals.join(','));
+  });
+  const blob=new Blob([lines.join('\\n')],{type:'text/csv'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='oral_reading_history.csv'; a.click();
+};
+
+/* ======= 保護者招待 ======= */
+function randToken(){ return Math.random().toString(36).slice(2)+Date.now().toString(36); }
+qs('#genInviteBtn').onclick = async ()=>{
+  const student_id=Number(qs('#guardianStudent').value||0);
+  if(!student_id) return alert('生徒を選択してください');
+  const mail=(qs('#guardianMail').value||'').trim();
+  const token=randToken();
+  await idb.saveInvite(token,student_id,mail);
+  const url = location.href.split('#')[0] + '#/g?token='+encodeURIComponent(token);
+  qs('#inviteLink').value = url;
+  navigator.clipboard && navigator.clipboard.writeText(url).catch(()=>{});
+  const stList=await idb.listStudents(); const st=stList.find(s=>s.id===student_id);
+  qs('#mailtoBtn').href = `mailto:${encodeURIComponent(mail)}?subject=${encodeURIComponent('【招待】音読結果閲覧')}&body=${encodeURIComponent(`${st?st.name:'お子さま'}の音読結果はこちら：\n${url}\n\n※端末のホーム画面に追加しておくと便利です。`)}`;
+  alert('招待リンクを作成しました。メールに貼り付けて送ってください。');
+};
+qs('#copyInviteBtn').onclick = ()=>{ const i=qs('#inviteLink'); i.select(); document.execCommand('copy'); };
+
+/* ======= 保護者画面 ======= */
+async function initGuardianFromToken(){
+  const hash=location.hash||'';
+  const q=hash.split('?')[1]||'';
+  const params=new URLSearchParams(q);
+  const token=params.get('token');
+  if(token){
+    const inv=await idb.getInvite(token);
+    if(inv && !inv.used){
+      await idb.addGuardian(inv.student_id);
+      await idb.useInvite(token);
+      qs('#guardianBind').textContent='この端末は招待によりお子さまと連携されました。';
+      localStorage.setItem('guardian_student_id', String(inv.student_id));
+    }
+  }
+  const sid=Number(localStorage.getItem('guardian_student_id')||0);
+  if(!sid){ qs('#gStudent').textContent='未連携'; return; }
+  const st=(await idb.listStudents()).find(s=>s.id===sid);
+  qs('#gStudent').textContent = st? `${st.name}（${st.grade}）` : '未連携';
+  // 本日の結果
+  const today=new Date(); today.setHours(0,0,0,0);
+  const rows=await idb.listSessions(sid,today.getTime(),today.getTime()+86400000);
+  const tb=qs('#gTable tbody'); tb.innerHTML='';
+  rows.forEach(r=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${ymdhm(r.created_at)}</td><td>${r.text_no||''}</td><td>${r.cpm}</td><td>${r.cer}</td><td>${r.overall}</td>`;
+    tb.appendChild(tr);
+  });
+}
+qs('#gInstallBtn').onclick = ()=>{
+  alert('ホーム画面に追加：\n1) 右上メニュー（⋮ / 共有）→「ホーム画面に追加」\n2) 追加後はそのアイコンから起動できます。');
+};
+
+/* ======= ルート初期化 ======= */
+async function init(){
+  await openDB();
+  // デモ用のサンプルが無ければ登録
+  const ps=await idb.listPassages();
+  if(!ps.length){
+    await idb.savePassage('1001','春の川辺', '春の川辺を歩くと、冷たい風の中にも、少しずつあたたかさが感じられます。土手の草むらには、小さな花が顔を出し、川の流れはきらきらと光っています。ぼくは、遠くで鳴く鳥の声を聞きながら、ゆっくりと足もとを確かめて歩きました。');
+    await idb.savePassage('1002','夏の入道雲', '夏の午後、空には大きな入道雲がむくむくと立ちのぼります。ひまわりの花は太陽を見上げ、遠くからは祭りの笛の音が聞こえてきます。わたしは汗をふきながらも、どこかうきうきした気持ちになりました。');
+  }
+  updateStudentBadge();
+  if('serviceWorker' in navigator){
+    const sw=`
+      self.addEventListener('install',e=>{ e.waitUntil(caches.open('oral-roles-v02').then(c=>c.addAll(['./']))); });
+      self.addEventListener('fetch',e=>{ e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))); });
+    `;
+    const blob=new Blob([sw],{type:'text/javascript'});
+    try{ await navigator.serviceWorker.register(URL.createObjectURL(blob)); log('SW registered'); }catch(e){ log('SW failed',e); }
+  }
+  setActiveTab();
+}
+init();
 </script>
 </body>
 </html>
