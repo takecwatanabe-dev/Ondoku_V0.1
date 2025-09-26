@@ -1,0 +1,587 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>音読評価 MVP v0.1.0</title>
+<style>
+:root{
+  --bg:#0b1020;--panel:#111827;--ink:#e6f1ff;--muted:#8aa0bf;--accent:#4f8cff;
+  --ok:#20e3c2;--warn:#ffce3a;--bad:#ff6b6b;--shadow:0 10px 24px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif}
+header{position:sticky;top:0;background:linear-gradient(180deg,rgba(0,0,0,.5),transparent),var(--panel);padding:10px 14px;box-shadow:var(--shadow);z-index:10}
+h1{margin:0;font-size:18px;letter-spacing:.3px}
+small.ver{color:var(--muted)}
+.wrapper{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:14px;max-width:1400px;margin:0 auto}
+.card{background:var(--panel);border:1px solid #1f2937;border-radius:16px;box-shadow:var(--shadow);padding:14px}
+.card h2{margin:2px 0 10px 0;font-size:16px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+input,select,button,textarea{background:#0c1322;color:var(--ink);border:1px solid #233047;border-radius:12px;padding:10px 12px;font-size:14px}
+textarea{width:100%;min-height:160px;line-height:1.6}
+button{cursor:pointer}
+button.primary{background:var(--accent);border-color:#2f63d1}
+button.good{background:var(--ok);border-color:#17b79b;color:#06231d}
+button.warn{background:var(--warn);border-color:#b69200;color:#261e00}
+button.danger{background:#d44;border-color:#b22}
+label{font-size:13px;color:var(--muted)}
+.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#1e293b;color:#cfe6ff;border:1px solid #2a3a56;font-size:12px}
+.kbd{border:1px solid #334155;background:#0b1322;padding:2px 6px;border-radius:6px;font-size:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+hr{border:none;border-top:1px solid #203049;margin:12px 0}
+.table{width:100%;border-collapse:collapse}
+.table th,.table td{border-bottom:1px solid #24324a;padding:8px;font-size:13px}
+.mono{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace}
+ul.inline{display:flex;gap:8px;flex-wrap:wrap;padding:0;margin:0;list-style:none}
+.note{color:#9bb2d1;font-size:12px}
+.highlight-miss{background:#3a1020;color:#ffd7de;border-bottom:1px dashed #ff6b6b}
+.highlight-kanji{background:#13293a;color:#aee3ff;border-bottom:1px dashed #4f8cff}
+.flex{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.right{margin-left:auto}
+.hidden{display:none !important}
+</style>
+</head>
+<body>
+<header>
+  <div class="flex">
+    <div>
+      <h1>音読評価 MVP <small class="ver">v0.1.0</small></h1>
+      <div class="note">録音→ASR(Web Speech)→速度/CER→抑揚→誤読漢字→保存（IndexedDB）</div>
+    </div>
+    <div class="right">
+      <span class="badge">Beta / ローカル保存</span>
+      <span id="debugBadge" class="badge hidden">DEBUG</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrapper">
+  <section class="card">
+    <h2>① 生徒・課題</h2>
+    <div class="row">
+      <label>生徒：</label>
+      <select id="studentSelect"></select>
+      <button id="addStudentBtn">追加</button>
+      <input id="studentName" placeholder="氏名">
+      <select id="studentGrade">
+        <option value="小1">小1</option><option value="小2">小2</option><option value="小3">小3</option>
+        <option value="小4" selected>小4</option><option value="小5">小5</option><option value="小6">小6</option>
+      </select>
+      <label><input type="checkbox" id="saveAudioChk"> 音声を保存（重くなります）</label>
+    </div>
+    <div class="row">
+      <label>課題タイトル：</label>
+      <input id="passageTitle" placeholder="例：春の川辺（小4）" style="flex:1">
+    </div>
+    <textarea id="passageText"></textarea>
+    <div class="note">※ ふりがな（<ruby>漢字<rt>かんじ</rt></ruby>）付きでもOK。MVPでは**本文そのもの**を正解テキストとして比較します。</div>
+  </section>
+
+  <section class="card">
+    <h2>② 録音・認識</h2>
+    <div class="row">
+      <button class="primary" id="startBtn">録音開始</button>
+      <button class="danger" id="stopBtn" disabled>停止</button>
+      <span id="recStatus" class="badge">準備OK</span>
+    </div>
+    <div class="grid2">
+      <div>
+        <label>認識テキスト（ASR）</label>
+        <textarea id="asrText" class="mono" placeholder="ここに認識結果が入ります"></textarea>
+      </div>
+      <div>
+        <label>発話の波形／ピッチ（簡易）</label>
+        <canvas id="viz" width="600" height="140" style="width:100%;height:140px;background:#0b1322;border:1px solid #233047;border-radius:12px;"></canvas>
+        <div class="note">グラフは簡易可視化（上：波形, 下：F0点）</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>③ 採点・保存</h2>
+    <div class="row">
+      <button class="good" id="analyzeBtn">採点する</button>
+      <button id="saveBtn" disabled>保存</button>
+      <button class="warn" id="downloadAudioBtn" disabled>音声DL</button>
+      <span id="scoreStatus" class="badge">未採点</span>
+    </div>
+    <div id="resultArea">
+      <div class="grid2">
+        <div>
+          <h3>スコア</h3>
+          <ul class="inline">
+            <li><span class="badge">速度 <span id="speedCpm">-</span> 文字/分</span></li>
+            <li><span class="badge">CER <span id="cer">-</span></span></li>
+            <li><span class="badge">F0レンジ <span id="f0range">-</span> Hz</span></li>
+            <li><span class="badge">抑揚スコア <span id="prosodyScore">-</span>/20</span></li>
+            <li><span class="badge">総合 <span id="overall">-</span>/100</span></li>
+          </ul>
+          <div class="note">※ 総合= 正確さ40 + 抑揚20 + 速度20 + 理解度(今回は0) ＝ 暫定MVP</div>
+        </div>
+        <div>
+          <h3>誤読漢字（推定）</h3>
+          <div id="missKanjis" class="mono"></div>
+          <div class="note">※ CER整列から抽出。漢字の不一致文字を集計（MVP近似）。</div>
+        </div>
+      </div>
+      <hr>
+      <h3>整列ハイライト</h3>
+      <div><b>正解：</b> <span id="refHl"></span></div>
+      <div><b>読上：</b> <span id="hypHl"></span></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>④ 講師ビュー（履歴/CSV）</h2>
+    <div class="row">
+      <button id="refreshListBtn">最新に更新</button>
+      <button id="exportCsvBtn">CSVエクスポート</button>
+      <span class="note">生徒で絞込み：上部の生徒選択</span>
+    </div>
+    <table class="table" id="histTable">
+      <thead><tr>
+        <th>日時</th><th>生徒</th><th>学年</th><th>課題</th><th>速度(文字/分)</th><th>CER</th><th>F0範囲</th><th>総合</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>ログ</h2>
+    <pre id="log" class="mono" style="white-space:pre-wrap;max-height:180px;overflow:auto;"></pre>
+  </section>
+</main>
+
+<script>
+/** ========= ユーティリティ ========= **/
+const qs = s=>document.querySelector(s);
+const qsa = s=>Array.from(document.querySelectorAll(s));
+const logEl = qs('#log');
+const debug = new URLSearchParams(location.search).get('debug')==='1';
+if(debug) qs('#debugBadge').classList.remove('hidden');
+function log(...a){ if(debug){ logEl.textContent += a.join(' ') + "\\n"; logEl.scrollTop = logEl.scrollHeight; } }
+function nowStr(){ const d=new Date(); const z=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())} ${z(d.getHours())}:${z(d.getMinutes())}` }
+function normalizeText(t){
+  if(!t) return '';
+  // ふりがな(<rt>)除去、タグ除去、空白類削除、全角英数を半角化
+  t = t.replace(/<rt>.*?<\\/rt>/g,'').replace(/<[^>]+>/g,'');
+  t = t.replace(/[\\s\\u3000]/g,'').replace(/[、，]/g,'、').replace(/[。．]/g,'。');
+  // 記号はおおむね無視
+  t = t.replace(/[「」『』（）()［］\\[\\]〈〉<>・… ,\\.\\-\\?\\!\\!！?]/g,'');
+  // 全角英数→半角
+  t = t.replace(/[Ａ-Ｚａ-ｚ０-９]/g,s=>String.fromCharCode(s.charCodeAt(0)-0xFEE0));
+  return t;
+}
+function isKanji(ch){ return /[\\u4E00-\\u9FFF\\u3400-\\u4DBF]/.test(ch); }
+
+/** ========= IndexedDB ========= **/
+const DB_NAME='oral_reading_db_v1';
+let db;
+function openDB(){
+  return new Promise((res,rej)=>{
+    const r = indexedDB.open(DB_NAME,1);
+    r.onupgradeneeded = e=>{
+      const db=e.target.result;
+      if(!db.objectStoreNames.contains('students')){
+        const s=db.createObjectStore('students', {keyPath:'id', autoIncrement:true});
+        s.createIndex('name','name',{unique:false});
+      }
+      if(!db.objectStoreNames.contains('sessions')){
+        const s=db.createObjectStore('sessions', {keyPath:'id', autoIncrement:true});
+        s.createIndex('student_id','student_id',{unique:false});
+        s.createIndex('created_at','created_at',{unique:false});
+      }
+    };
+    r.onsuccess=()=>{ db=r.result; res(); };
+    r.onerror=()=>rej(r.error);
+  });
+}
+function tx(store,mode='readonly'){ return db.transaction(store,mode).objectStore(store); }
+async function addStudent(name,grade){
+  const s={name,grade,created_at:Date.now()};
+  return new Promise((res,rej)=>{ const r=tx('students','readwrite').add(s); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); });
+}
+async function listStudents(){
+  return new Promise((res,rej)=>{
+    const out=[]; const req=tx('students').openCursor();
+    req.onsuccess=e=>{ const c=e.target.result; if(c){ out.push({...c.value,id:c.primaryKey}); c.continue(); } else res(out); };
+    req.onerror=()=>rej(req.error);
+  });
+}
+async function saveSession(sess){
+  return new Promise((res,rej)=>{ const r=tx('sessions','readwrite').add(sess); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); });
+}
+async function listSessions(studentId=null){
+  return new Promise((res,rej)=>{
+    const out=[]; const store=tx('sessions');
+    const req = studentId ? store.index('student_id').openCursor(IDBKeyRange.only(studentId)) : store.openCursor();
+    req.onsuccess=e=>{ const c=e.target.result; if(c){ out.push({...c.value,id:c.primaryKey}); c.continue(); } else res(out.sort((a,b)=>b.created_at-a.created_at)); };
+    req.onerror=()=>rej(req.error);
+  });
+}
+
+/** ========= 音声・ASR（Web Speech API） ========= **/
+let mediaStream, audioCtx, procNode, analyser, gainNode, recorder, recChunks=[], drawing=false;
+let asr, asrText='', asrActive=false;
+let startedAt=0, voicedMs=0, totalMs=0, f0Stats={vals:[], min:9999, max:0, mean:0, sd:0};
+
+const vizCanvas = qs('#viz'); const vctx = vizCanvas.getContext('2d');
+function drawViz(timeData, f0){
+  const w=vizCanvas.width, h=vizCanvas.height;
+  vctx.fillStyle='#0b1322'; vctx.fillRect(0,0,w,h);
+  // 波形
+  vctx.strokeStyle='#88aaff'; vctx.beginPath();
+  const len=timeData.length;
+  for(let i=0;i<len;i++){
+    const x=i/len*w; const y=(timeData[i]/128)*0.45*h + 0.25*h;
+    if(i===0) vctx.moveTo(x,y); else vctx.lineTo(x,y);
+  }
+  vctx.stroke();
+  // F0点群
+  vctx.fillStyle='#20e3c2';
+  f0.slice(-60).forEach((hz,idx)=>{
+    if(hz>0){ const x = w - (60-idx)* (w/60); const y = 0.75*h + (1 - Math.min(hz,500)/500)*0.25*h;
+      vctx.beginPath(); vctx.arc(x,y,2,0,Math.PI*2); vctx.fill();
+    }
+  });
+}
+
+function startASR(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){ alert('このブラウザはWeb Speech APIに未対応です。Chromeをお試しください。'); return false; }
+  asr = new SR();
+  asr.lang='ja-JP'; asr.interimResults=true; asr.continuous=true;
+  asr.onresult = e=>{
+    let tmp=''; for(let i=e.resultIndex;i<e.results.length;i++){
+      const r=e.results[i]; if(r.isFinal) asrText += r[0].transcript;
+      else tmp += r[0].transcript;
+    }
+    qs('#asrText').value = asrText + tmp;
+  };
+  asr.onerror = e=>{ log('ASR error', e.error); };
+  asr.onend = ()=>{ asrActive=false; };
+  asr.start(); asrActive=true; return true;
+}
+
+function autocorrF0(buf, sampleRate){
+  // 簡易ACF/YIN風（MVP）。人声想定：70–500Hz
+  const minLag = Math.floor(sampleRate/500), maxLag = Math.floor(sampleRate/70);
+  let bestLag=0, bestCorr=0;
+  for(let lag=minLag; lag<=maxLag; lag++){
+    let corr=0;
+    for(let i=0;i<buf.length-lag;i++){ corr += buf[i]*buf[i+lag]; }
+    if(corr>bestCorr){ bestCorr=corr; bestLag=lag; }
+  }
+  if(bestLag===0||bestCorr<1e-3) return 0;
+  return sampleRate/bestLag;
+}
+
+async function startRec(){
+  mediaStream = await navigator.mediaDevices.getUserMedia({audio:true});
+  // MediaRecorder for audio download
+  recChunks=[]; recorder = new MediaRecorder(mediaStream);
+  recorder.ondataavailable = e=>{ if(e.data.size>0) recChunks.push(e.data); };
+  recorder.start();
+
+  audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  const src = audioCtx.createMediaStreamSource(mediaStream);
+  analyser = audioCtx.createAnalyser(); analyser.fftSize=1024;
+  gainNode = audioCtx.createGain(); gainNode.gain.value=1.0;
+  const bufferLen=1024;
+  // ScriptProcessorは非推奨だがMVPでは簡易採用
+  procNode = audioCtx.createScriptProcessor(bufferLen,1,1);
+  const timeBuf = new Uint8Array(analyser.fftSize);
+  const f0Arr = f0Stats.vals;
+
+  startedAt = performance.now(); voicedMs = 0; totalMs = 0; f0Stats.vals=[]; f0Stats.min=9999; f0Stats.max=0;
+
+  procNode.onaudioprocess = e=>{
+    const ch = e.inputBuffer.getChannelData(0);
+    // RMSで有声判定
+    let rms=0; for(let i=0;i<ch.length;i++){ rms += ch[i]*ch[i]; }
+    rms = Math.sqrt(rms/ch.length);
+    const frameMs = (ch.length/audioCtx.sampleRate)*1000;
+    totalMs += frameMs;
+    let f0=0;
+    if(rms>0.01){ // 簡易VAD閾値
+      voicedMs += frameMs;
+      f0 = autocorrF0(ch, audioCtx.sampleRate);
+      if(f0>60 && f0<500){
+        f0Arr.push(f0);
+        if(f0<f0Stats.min) f0Stats.min=f0;
+        if(f0>f0Stats.max) f0Stats.max=f0;
+      }else f0Arr.push(0);
+    }else{
+      f0Arr.push(0);
+    }
+    // 可視化
+    analyser.getByteTimeDomainData(timeBuf);
+    drawViz(timeBuf, f0Arr);
+  };
+  src.connect(analyser); analyser.connect(gainNode); gainNode.connect(procNode); procNode.connect(audioCtx.destination);
+  log('rec start');
+}
+
+async function stopRec(){
+  recorder && recorder.state!=='inactive' && recorder.stop();
+  mediaStream && mediaStream.getTracks().forEach(t=>t.stop());
+  procNode && procNode.disconnect(); gainNode && gainNode.disconnect(); analyser && analyser.disconnect();
+  audioCtx && audioCtx.close();
+  asrActive && asr && asr.stop();
+  log('rec stop');
+}
+
+/** ========= 採点（CER・整列・速度・抑揚） ========= **/
+function levenshteinAlign(a,b){
+  const n=a.length, m=b.length;
+  const dp=Array.from({length:n+1},()=>Array(m+1).fill(0));
+  for(let i=0;i<=n;i++) dp[i][0]=i;
+  for(let j=0;j<=m;j++) dp[0][j]=j;
+  for(let i=1;i<=n;i++){
+    for(let j=1;j<=m;j++){
+      const cost = a[i-1]===b[j-1]?0:1;
+      dp[i][j]=Math.min(dp[i-1][j]+1, dp[i][j-1]+1, dp[i-1][j-1]+cost);
+    }
+  }
+  // backtrack
+  let i=n,j=m; const ops=[];
+  while(i>0 || j>0){
+    if(i>0 && dp[i][j]===dp[i-1][j]+1){ ops.push({op:'del',ref:a[i-1],hyp:''}); i--; }
+    else if(j>0 && dp[i][j]===dp[i][j-1]+1){ ops.push({op:'ins',ref:'',hyp:b[j-1]}); j--; }
+    else{ const op=(a[i-1]===b[j-1])?'eq':'sub'; ops.push({op,ref:a[i-1],hyp:b[j-1]}); i--; j--; }
+  }
+  ops.reverse();
+  return {dist:dp[n][m], ops};
+}
+function highlightAlign(ops){
+  let refHtml='', hypHtml='';
+  for(const o of ops){
+    if(o.op==='eq'){
+      refHtml += `<span>${o.ref}</span>`;
+      hypHtml += `<span>${o.hyp}</span>`;
+    }else if(o.op==='sub'){
+      refHtml += `<span class="highlight-miss">${o.ref}</span>`;
+      hypHtml += `<span class="highlight-miss">${o.hyp}</span>`;
+    }else if(o.op==='del'){
+      refHtml += `<span class="highlight-miss">${o.ref}</span>`;
+      hypHtml += `<span>∅</span>`;
+    }else if(o.op==='ins'){
+      refHtml += `<span>∅</span>`;
+      hypHtml += `<span class="highlight-miss">${o.hyp}</span>`;
+    }
+  }
+  return {refHtml,hypHtml};
+}
+function arrayMean(a){ if(!a.length) return 0; return a.reduce((x,y)=>x+y,0)/a.length; }
+function arraySd(a){ const m=arrayMean(a.filter(x=>x>0)); const v=arrayMean(a.filter(x=>x>0).map(x=>(x-m)*(x-m))); return Math.sqrt(v||0); }
+
+function analyzeAll(){
+  const refRaw = qs('#passageText').value.trim();
+  const hypRaw = qs('#asrText').value.trim();
+  if(!refRaw || !hypRaw){ alert('課題文と認識テキストの両方が必要です。'); return null; }
+
+  const ref = normalizeText(refRaw);
+  const hyp = normalizeText(hypRaw);
+
+  const {dist, ops} = levenshteinAlign(ref.split(''), hyp.split(''));
+  const cer = (ref.length>0)? (dist/ref.length) : 1;
+
+  // 誤読漢字（ref側で一致しなかった漢字を抽出）
+  const missKanji = {};
+  ops.forEach(o=>{
+    if((o.op==='sub'||o.op==='del') && isKanji(o.ref)) missKanji[o.ref] = (missKanji[o.ref]||0)+1;
+  });
+  const missList = Object.entries(missKanji).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${k}:${v}`);
+
+  // 速度：正味発話時間（voicedMs）でhyp文字数/分
+  const minutes = Math.max(1e-6, voicedMs/60000);
+  const cpm = Math.round(hyp.length / minutes);
+
+  // 抑揚：F0範囲・分散からスコア（0〜20）
+  const f0v = f0Stats.vals.filter(x=>x>0);
+  const f0min = f0Stats.min===9999?0:Math.round(f0Stats.min);
+  const f0max = Math.round(f0Stats.max||0);
+  const f0range = (f0max>0 && f0min>0)? (f0max - f0min) : 0;
+  const f0sd = Math.round(arraySd(f0Stats.vals));
+
+  let prosodyScore = 0;
+  // レンジとSDが程よいほど高得点。しきい値は仮。
+  if(f0range>40) prosodyScore += 10; else if(f0range>20) prosodyScore += 6; else if(f0range>10) prosodyScore += 3;
+  if(f0sd>30) prosodyScore += 10; else if(f0sd>15) prosodyScore += 6; else if(f0sd>8) prosodyScore += 3;
+  prosodyScore = Math.min(20, prosodyScore);
+
+  // 正確さスコア（0〜40）：CERに基づく
+  let accScore = Math.max(0, 40 * (1 - cer)); // 単純化
+  // 速度スコア（0〜20）：180〜300文字/分で満点、外れると逓減（仮）
+  let speedScore = 0;
+  if(cpm>=180 && cpm<=300) speedScore = 20;
+  else if(cpm<180) speedScore = Math.max(0, 20 * (cpm/180));
+  else speedScore = Math.max(0, 20 * (1 - (cpm-300)/300)); // 300超は下げる
+
+  const overall = Math.round(accScore + prosodyScore + speedScore); // 理解度は次版
+
+  // ハイライト
+  const {refHtml,hypHtml} = highlightAlign(ops);
+
+  // 表示更新
+  qs('#cer').textContent = cer.toFixed(3);
+  qs('#speedCpm').textContent = cpm;
+  qs('#f0range').textContent = f0range;
+  qs('#prosodyScore').textContent = prosodyScore.toFixed(1);
+  qs('#overall').textContent = overall;
+  qs('#missKanjis').textContent = missList.join('　');
+  qs('#refHl').innerHTML = refHtml;
+  qs('#hypHl').innerHTML = hypHtml;
+  qs('#scoreStatus').textContent = '採点済み';
+  qs('#saveBtn').disabled = false;
+
+  return {
+    cpm, cer:Number(cer.toFixed(3)), f0range, prosodyScore:Number(prosodyScore.toFixed(1)),
+    overall, missKanji, refRaw, hypRaw
+  };
+}
+
+/** ========= UIイベント ========= **/
+let currentStudentId=null, currentStudent={};
+let lastBlob=null, lastScores=null;
+
+async function refreshStudents(){
+  const list = await listStudents();
+  const sel = qs('#studentSelect'); sel.innerHTML='';
+  list.forEach(s=>{
+    const opt=document.createElement('option'); opt.value=s.id; opt.textContent=`${s.name}（${s.grade}）`;
+    sel.appendChild(opt);
+  });
+  if(list.length){
+    sel.value = sel.options[0].value; currentStudentId = Number(sel.value);
+    currentStudent = list.find(x=>x.id===currentStudentId) || {};
+  }
+}
+async function refreshHistory(){
+  const tbody=qs('#histTable tbody'); tbody.innerHTML='';
+  const sid = currentStudentId?Number(currentStudentId):null;
+  const rows = await listSessions(sid);
+  rows.forEach(r=>{
+    const tr=document.createElement('tr');
+    const dt=new Date(r.created_at);
+    const z=n=>String(n).padStart(2,'0'); const dstr=`${dt.getFullYear()}-${z(dt.getMonth()+1)}-${z(dt.getDate())} ${z(dt.getHours())}:${z(dt.getMinutes())}`;
+    tr.innerHTML = `<td>${dstr}</td><td>${r.student_name}</td><td>${r.student_grade}</td><td>${r.passage_title}</td>
+      <td>${r.cpm}</td><td>${r.cer}</td><td>${r.f0range}</td><td>${r.overall}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function exportCsv(rows){
+  const hdr = ['datetime','student','grade','title','cpm','cer','f0range','prosody','overall','miss_kanji_json'];
+  const lines = [hdr.join(',')];
+  for(const r of rows){
+    const dt=new Date(r.created_at).toISOString();
+    const miss = JSON.stringify(r.miss_kanji || {});
+    const vals=[dt,r.student_name,r.student_grade,r.passage_title,r.cpm,r.cer,r.f0range,r.prosodyScore,r.overall,miss]
+      .map(v=>`"${String(v).replace(/"/g,'""')}"`);
+    lines.push(vals.join(','));
+  }
+  const blob=new Blob([lines.join('\\n')],{type:'text/csv'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='oral_reading_history.csv'; a.click();
+}
+
+function setRecUi(active){
+  qs('#startBtn').disabled = active;
+  qs('#stopBtn').disabled = !active;
+  qs('#downloadAudioBtn').disabled = true;
+  qs('#saveBtn').disabled = true;
+  qs('#recStatus').textContent = active?'録音中…':'準備OK';
+}
+
+async function init(){
+  await openDB();
+  await refreshStudents();
+  // デフォ生徒が居なければダミー作成
+  if(!currentStudentId){
+    const id = await addStudent('体験 太郎','小4');
+    await refreshStudents();
+    currentStudentId = id;
+  }
+
+  // サンプル課題
+  qs('#passageTitle').value = '春の川辺（小4）';
+  qs('#passageText').value = `春の川辺を歩くと、冷たい風の中にも、少しずつあたたかさが感じられます。土手の草むらには、小さな花が顔を出し、川の流れはきらきらと光っています。ぼくは、遠くで鳴く鳥の声を聞きながら、ゆっくりと足もとを確かめて歩きました。`;
+
+  // PWA（同一ファイル内Service Worker）
+  if('serviceWorker' in navigator){
+    const swCode = \`
+      self.addEventListener('install',e=>{ e.waitUntil(caches.open('oral-mvp-v1').then(c=>c.addAll(['./']))); });
+      self.addEventListener('fetch',e=>{ e.respondWith(caches.match(e.request).then(r=>r || fetch(e.request))); });
+    \`;
+    const blob=new Blob([swCode],{type:'text/javascript'});
+    const swUrl=URL.createObjectURL(blob);
+    try{ await navigator.serviceWorker.register(swUrl); log('SW registered'); }catch(e){ log('SW fail', e); }
+  }
+}
+
+qs('#addStudentBtn').onclick = async ()=>{
+  const name = qs('#studentName').value.trim();
+  const grade = qs('#studentGrade').value;
+  if(!name){ alert('生徒名を入力してください'); return; }
+  await addStudent(name,grade);
+  qs('#studentName').value='';
+  await refreshStudents();
+};
+qs('#studentSelect').onchange = e=>{
+  currentStudentId = Number(e.target.value);
+};
+qs('#startBtn').onclick = async ()=>{
+  setRecUi(true);
+  asrText=''; qs('#asrText').value='';
+  await startRec();
+  const ok = startASR();
+  if(!ok){ setRecUi(false); return; }
+};
+qs('#stopBtn').onclick = async ()=>{
+  await stopRec();
+  setRecUi(false);
+  // 音声DL用
+  lastBlob = new Blob(recChunks,{type:'audio/webm'});
+  qs('#downloadAudioBtn').disabled = false;
+};
+qs('#downloadAudioBtn').onclick = ()=>{
+  if(!lastBlob) return;
+  const a=document.createElement('a'); a.href=URL.createObjectURL(lastBlob); a.download=`reading_${Date.now()}.webm`; a.click();
+};
+qs('#analyzeBtn').onclick = ()=>{
+  lastScores = analyzeAll();
+  if(!lastScores) return;
+};
+qs('#saveBtn').onclick = async ()=>{
+  if(!lastScores){ alert('まず採点してください'); return; }
+  const students = await listStudents();
+  const st = students.find(s=>s.id===currentStudentId) || {name:'-',grade:'-'};
+  const sess = {
+    created_at: Date.now(),
+    student_id: currentStudentId,
+    student_name: st.name,
+    student_grade: st.grade,
+    passage_title: qs('#passageTitle').value.trim()||'(無題)',
+    cpm: lastScores.cpm, cer: lastScores.cer, f0range: lastScores.f0range,
+    prosodyScore: lastScores.prosodyScore, overall: lastScores.overall,
+    miss_kanji: lastScores.missKanji,
+    ref_text: lastScores.refRaw, hyp_text: lastScores.hypRaw,
+    audio_blob: (qs('#saveAudioChk').checked && lastBlob)? lastBlob : null
+  };
+  await saveSession(sess);
+  qs('#scoreStatus').textContent='保存済み';
+  await refreshHistory();
+};
+qs('#refreshListBtn').onclick = refreshHistory;
+qs('#exportCsvBtn').onclick = async ()=>{
+  const sid = currentStudentId?Number(currentStudentId):null;
+  const rows = await listSessions(sid);
+  exportCsv(rows);
+};
+
+// 初期化
+init().then(()=>{ log('ready'); });
+</script>
+</body>
+</html>
