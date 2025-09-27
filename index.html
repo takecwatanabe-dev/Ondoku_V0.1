@@ -1,4 +1,5 @@
-<!-- 2025-09-27 16:45 JST | Version: V0.2.11 -->
+<!-- 2025-09-27 17:27 JST | Version: V0.2.12-lite -->
+
 <!doctype html>
 <html lang="ja">
 <head>
@@ -8,87 +9,40 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
-<title>音読SURASURA（Roles） V0.2.11</title>
+<title>音読SURASURA V0.2.12-lite</title>
 <style>
-:root{
-  --bg:#0b1020;--panel:#111827;--ink:#e6f1ff;--muted:#8aa0bf;--accent:#4f8cff;
-  --ok:#20e3c2;--warn:#ffce3a;--bad:#ff6b6b;--shadow:0 10px 24px rgba(0,0,0,.45);
-  --tile-stu:#4f8cff; --tile-guard:#20e3c2; --tile-skip:#ffce3a; --tile-teach:#ff6b6b;
-}
-*{box-sizing:border-box}
-html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);
-  font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif}
-header{position:sticky;top:0;background:linear-gradient(180deg,rgba(0,0,0,.5),transparent),var(--panel);
-  padding:10px 14px;box-shadow:var(--shadow);z-index:50}
-h1{margin:0;font-size:18px}
-small.ver{color:#8aa0bf;margin-left:8px}
-.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#1e293b;color:#cfe6ff;border:1px solid #2a3a56;font-size:12px}
-.note{color:#9bb2d1;font-size:12px}
-.wrapper{display:grid;grid-template-columns:1fr;gap:16px;padding:14px;max-width:980px;margin:0 auto}
-.card{background:var(--panel);border:1px solid #1f2937;border-radius:16px;box-shadow:var(--shadow);padding:14px}
-.card h2{margin:4px 0 10px 0;font-size:16px}
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
-input,select,button,textarea{background:#0c1322;color:var(--ink);border:1px solid #233047;border-radius:12px;padding:10px 12px;font-size:14px}
-button{cursor:pointer}
-button.primary{background:var(--accent);border-color:#2f63d1}
-button.good{background:var(--ok);border-color:#17b79b;color:#06231d}
-button.warn{background:var(--warn);border-color:#b69200;color:#261e00}
-button.danger{background:#d44;border-color:#b22}
-.table{width:100%;border-collapse:collapse}
-.table th,.table td{border-bottom:1px solid #24324a;padding:8px;font-size:13px}
-.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
-.hidden{display:none!important}
-.kbd{border:1px solid #334155;background:#0b1322;padding:2px 6px;border-radius:6px;font-size:12px}
-hr{border:none;border-top:1px solid #203049;margin:12px 0}
-.flex{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-.right{margin-left:auto}
-.tabnav{display:flex;gap:8px}
-a.tab{color:#cfe6ff;text-decoration:none;border:1px solid #2a3a56;border-radius:999px;padding:6px 10px}
-a.tab.active{background:#24324a}
-.hl-miss{background:#3a1020;color:#ffd7de;border-bottom:1px dashed #ff6b6b}
-canvas{background:#0b1322;border:1px solid #233047;border-radius:12px}
-/* Landing overlay */
-.landing-cover{position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;background:#0b1020;}
-.landing-cover::before{content:"";position:absolute;inset:0;background:radial-gradient(80% 60% at 50% 10%,rgba(79,140,255,.15),transparent),linear-gradient(180deg,rgba(0,0,0,.85),rgba(0,0,0,.92));pointer-events:none}
-.landing-panel{position:relative;width:min(860px,94vw);border-radius:24px;background:var(--panel);border:1px solid #22324a;box-shadow:var(--shadow);padding:22px}
-.landing-panel h1{font-size:26px;margin:0 0 10px 0}
-.tilegrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.tile{display:flex;align-items:center;justify-content:center;border-radius:18px;padding:18px;font-size:18px;border:2px solid rgba(255,255,255,.1);box-shadow:0 8px 20px rgba(0,0,0,.4)}
-.tile.stu{background:var(--tile-stu)} .tile.guard{background:var(--tile-guard);color:#06231d;border-color:#0a6} .tile.skip{background:var(--tile-skip);color:#261e00;border-color:#b69200} .tile.teach{background:var(--tile-teach)}
-.tile b{font-size:20px;margin-left:6px}
-@media(max-width:640px){.tilegrid{grid-template-columns:1fr}}
+:root{--bg:#0b1020;--panel:#111827;--ink:#e6f1ff;--accent:#4f8cff;--ok:#20e3c2;--warn:#ffce3a;--bad:#ff6b6b;}
+*{box-sizing:border-box}html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Hiragino Kaku Gothic ProN,Meiryo,sans-serif}
+header{position:sticky;top:0;background:linear-gradient(180deg,rgba(0,0,0,.5),transparent),var(--panel);padding:10px 14px;z-index:50}
+h1{margin:0;font-size:18px}.note{color:#9bb2d1;font-size:12px}.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#1e293b;color:#cfe6ff;border:1px solid #2a3a56;font-size:12px}
+.wrapper{display:grid;gap:16px;padding:14px;max-width:980px;margin:0 auto}.card{background:var(--panel);border:1px solid #1f2937;border-radius:16px;padding:14px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}input,select,button,textarea{background:#0c1322;color:var(--ink);border:1px solid #233047;border-radius:12px;padding:10px 12px;font-size:14px}
+a.tab{color:#cfe6ff;text-decoration:none;border:1px solid #2a3a56;border-radius:999px;padding:6px 10px}a.tab.active{background:#24324a}.hidden{display:none!important}
+/* landing */
+.landing-cover{position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;background:#0b1020}
+.landing-cover::before{content:"";position:absolute;inset:0;background:radial-gradient(80% 60% at 50% 10%,rgba(79,140,255,.15),transparent),linear-gradient(180deg,rgba(0,0,0,.85),rgba(0,0,0,.92))}
+.landing-panel{position:relative;width:min(860px,94vw);border-radius:24px;background:var(--panel);border:1px solid #22324a;padding:22px}
+.tilegrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:640px){.tilegrid{grid-template-columns:1fr}}
+.tile{display:flex;align-items:center;justify-content:center;border-radius:18px;padding:18px;font-size:18px;border:2px solid rgba(255,255,255,.1);box-shadow:0 8px 20px rgba(0,0,0,.4);cursor:pointer;text-decoration:none;color:inherit}
+.tile.stu{background:#4f8cff}.tile.guard{background:#20e3c2;color:#06231d}.tile.skip{background:#ffce3a;color:#261e00}.tile.teach{background:#ff6b6b}
 body.landing-active header, body.landing-active main{visibility:hidden}
-/* Bottom toolbar (student) */
+/* student */
 .tool-fixed{position:sticky;bottom:0;z-index:20;background:linear-gradient(180deg,transparent,rgba(0,0,0,.4)),#0b1020;padding:8px;border-radius:14px;border:1px solid #1f2b44;display:flex;gap:8px;justify-content:space-between}
-.tool-fixed button{font-size:18px;padding:14px 18px;border-radius:14px;flex:1}
-.btn-start{background:#36d399;border-color:#109e68;color:#06231d}
-.btn-pause{background:#60a5fa;border-color:#2563eb}
-.btn-stop{background:#fb7185;border-color:#b91c1c}
-/* Reading text */
+.tool-fixed button{font-size:18px;padding:14px 18px;border-radius:14px;flex:1}.btn-start{background:#36d399}.btn-pause{background:#60a5fa}.btn-stop{background:#fb7185}
 #readingText{min-height:180px;font-size:28px;line-height:1.9;border:1px solid #233047;border-radius:14px;padding:14px;background:#0c1322}
-.reading-anim{animation:wiggle 1.2s ease-in-out infinite}
-@keyframes wiggle{0%{transform:scale(1)}50%{transform:scale(1.02)}100%{transform:scale(1)}}
-/* Viz glow */
-.glow{filter:drop-shadow(0 0 12px rgba(80,200,255,.55))}
-/* Font size pills */
-.pills{display:flex;gap:6px}
-.pills button{padding:6px 10px;border-radius:999px}
-
-@media (max-width:640px){
-  header h1{font-size:16px}
-  button{padding:12px 14px}
-  #viz{height:100px}
-}
+.reading-anim{animation:wiggle 1.2s ease-in-out infinite}@keyframes wiggle{0%{transform:scale(1)}50%{transform:scale(1.02)}100%{transform:scale(1)}}
+.hl-miss{background:#3a1020;color:#ffd7de;border-bottom:1px dashed #ff6b6b}
+.table{width:100%;border-collapse:collapse}.table th,.table td{border-bottom:1px solid #24324a;padding:8px;font-size:13px}
 </style>
 </head>
 <body>
 <header>
-  <div class="flex">
+  <div style="display:flex;gap:12px;align-items:center">
     <div>
-      <h1>音読SURASURA<small class="ver">V0.2.11</small></h1>
-      <div class="note">#/start=入口｜#/s=生徒｜#/t=講師｜#/g=保護者（招待orPW）｜?debug=1でログ</div>
+      <h1>音読SURASURA <small class="badge">V0.2.12-lite</small></h1>
+      <div class="note">#/start=入口｜#/s=生徒｜#/t=講師｜#/g=保護者（PW）｜?debug=1でログ</div>
     </div>
-    <nav class="tabnav right" id="topNav">
+    <nav class="tabnav" style="margin-left:auto;display:flex;gap:8px">
       <a id="tabS" href="#/s" class="tab">生徒</a>
       <a id="tabG" href="#/g" class="tab">保護者</a>
       <a id="tabT" href="#/t" class="tab">講師</a>
@@ -97,16 +51,16 @@ body.landing-active header, body.landing-active main{visibility:hidden}
   </div>
 </header>
 
-<!-- Landing overlay -->
+<!-- Landing -->
 <div id="landingCover" class="landing-cover">
   <div class="landing-panel">
     <h1>音読SURASURA</h1>
-    <div class="note">ロールを選んでください（生徒/保護者/スキップはボタンだけ、講師は簡易ログイン）</div>
+    <div class="note">ロールを選んでください（生徒/保護者/スキップはそのまま、講師はID/PW）</div>
     <div class="tilegrid" style="margin:12px 0 12px">
-      <button id="goS" class="tile stu">🧒 <b>生徒で入る</b></button>
-      <button id="goG" class="tile guard">👪 <b>保護者で入る</b></button>
-      <button id="goSkip" class="tile skip">👀 <b>スキップ（見学）</b></button>
-      <button id="goT" class="tile teach">👩‍🏫 <b>講師ログイン</b></button>
+      <a id="goS" href="#/s" class="tile stu">🧒 <b>生徒で入る</b></a>
+      <a id="goG" href="#/g" class="tile guard">👪 <b>保護者で入る</b></a>
+      <a id="goSkip" href="#/s" class="tile skip">👀 <b>スキップ（見学）</b></a>
+      <a id="goT" href="#/t" class="tile teach">👩‍🏫 <b>講師ログイン</b></a>
     </div>
     <div class="row"><label><input type="checkbox" id="rememberRole"> 次回からこのロールで開く（この端末）</label></div>
     <hr>
@@ -115,20 +69,19 @@ body.landing-active header, body.landing-active main{visibility:hidden}
       <input id="loginId" placeholder="ID">
       <input id="loginPw" type="password" placeholder="パスワード">
       <button id="loginBtn" class="primary">ログイン</button>
-      <div class="note">ID/PW：<span class="kbd">surasura / surasura</span></div>
+      <div class="note">ID/PW：<span class="badge">surasura / surasura</span></div>
     </div>
   </div>
 </div>
 
 <main class="wrapper">
-  <!-- 生徒 -->
+  <!-- Student -->
   <section id="viewS" class="card hidden">
     <h2>生徒｜音読</h2>
     <div class="row">
-      <span>この端末の生徒：</span>
-      <span id="studentBadge" class="badge">未設定</span>
+      <span>この端末の生徒：</span><span id="studentBadge" class="badge">未設定</span>
       <button id="setStudentBtn">生徒を設定</button>
-      <div class="right pills">
+      <div style="margin-left:auto;display:flex;gap:6px">
         <button class="fontBtn" data-size="24">A−</button>
         <button class="fontBtn" data-size="28">A</button>
         <button class="fontBtn" data-size="34">A＋</button>
@@ -145,9 +98,9 @@ body.landing-active header, body.landing-active main{visibility:hidden}
     <textarea id="passageS" class="hidden"></textarea>
     <div class="row">
       <label>認識（自動）</label>
-      <textarea id="asrText" class="mono" placeholder="ここに認識結果が入ります"></textarea>
+      <textarea id="asrText" placeholder="ここに認識結果が入ります"></textarea>
     </div>
-    <canvas id="viz" width="700" height="120" style="width:100%;height:120px"></canvas>
+    <canvas id="viz" width="700" height="120" style="width:100%;height:120px;border:1px solid #233047;border-radius:12px;background:#0b1322"></canvas>
     <div class="tool-fixed">
       <button id="startBtn" class="btn-start">▶ 録音開始</button>
       <button id="pauseBtn" class="btn-pause" disabled>⏸ 一時停止</button>
@@ -158,26 +111,24 @@ body.landing-active header, body.landing-active main{visibility:hidden}
       <span id="scoreStatus" class="badge">未採点</span>
       <button id="saveBtn" disabled>保存</button>
       <button id="dlAudioBtn" class="warn" disabled>音声DL</button>
-      <span class="right badge">連続 <b id="streak">0</b> 日｜累計 <b id="totalDays">0</b> 日</span>
+      <span style="margin-left:auto" class="badge">連続 <b id="streak">0</b> 日｜累計 <b id="totalDays">0</b> 日</span>
     </div>
     <div id="scoreBox">
-      <ul class="flex">
+      <ul class="row" style="gap:8px">
         <li class="badge">速度 <b id="speedCpm">-</b> 文字/分</li>
         <li class="badge">CER <b id="cer">-</b></li>
         <li class="badge">F0レンジ <b id="f0range">-</b> Hz</li>
         <li class="badge">抑揚 <b id="prosodyScore">-</b>/20</li>
         <li class="badge">総合 <b id="overall">-</b>/100</li>
       </ul>
-      <div style="margin-top:8px">
-        <b>誤読（推定）</b>：<span id="missKanjis" class="mono"></span>
-      </div>
+      <div style="margin-top:8px"><b>誤読（推定）</b>：<span id="missKanjis"></span></div>
     </div>
     <hr>
     <div><b>正解：</b> <span id="refHl"></span></div>
     <div><b>読上：</b> <span id="hypHl"></span></div>
   </section>
 
-  <!-- 講師 -->
+  <!-- Teacher -->
   <section id="viewT" class="card hidden">
     <h2>講師｜管理・日次ダイジェスト</h2>
     <div class="card" style="margin:-4px 0 10px 0">
@@ -223,37 +174,20 @@ body.landing-active header, body.landing-active main{visibility:hidden}
     </div>
 
     <div class="card" style="margin:-4px 0 10px 0">
-      <h3>3) 保護者招待（マジックリンク）</h3>
-      <div class="row">
-        <label>対象生徒：</label>
-        <select id="guardianStudent"></select>
-        <input id="guardianMail" type="email" placeholder="保護者メール（任意）">
-        <button id="genInviteBtn" class="primary">招待リンク作成</button>
-      </div>
-      <div class="row">
-        <input id="inviteLink" placeholder="ここにリンクが表示されます" style="flex:1">
-        <button id="copyInviteBtn">コピー</button>
-        <a id="mailtoBtn" class="badge" href="#" target="_blank">メール作成</a>
-      </div>
-    </div>
-
-    <div class="card" style="margin:-4px 0 10px 0">
-      <h3>4) 今日のダイジェスト</h3>
+      <h3>3) 今日のダイジェスト</h3>
       <div class="row"><button id="refreshTodayBtn">更新</button>
         <button id="exportCsvBtn" class="warn">CSVエクスポート</button>
       </div>
       <table class="table" id="todayTable"><thead><tr>
         <th>時刻</th><th>生徒</th><th>学年</th><th>番号</th><th>速度</th><th>CER</th><th>F0</th><th>総合</th>
       </tr></thead><tbody></tbody></table>
-      <h4>誤読漢字ランキング（本日）</h4>
-      <div id="kanjiRankToday" class="mono"></div>
     </div>
   </section>
 
-  <!-- 保護者 -->
+  <!-- Guardian -->
   <section id="viewG" class="card hidden">
     <h2>保護者｜本日の結果</h2>
-    <div id="guardianBind" class="note">招待リンク or パスワード認証で閲覧できます。</div>
+    <div id="guardianBind" class="note">パスワード認証（mama）または招待リンクで閲覧できます。</div>
     <div class="row">
       <span>お子さま：</span> <span id="gStudent" class="badge">未連携</span>
       <button id="gInstallBtn">ホーム画面に追加の手順</button>
@@ -265,32 +199,29 @@ body.landing-active header, body.landing-active main{visibility:hidden}
 
   <section class="card">
     <h2>ログ</h2>
-    <pre id="log" class="mono" style="white-space:pre-wrap;max-height:160px;overflow:auto"></pre>
+    <pre id="log" style="white-space:pre-wrap;max-height:160px;overflow:auto"></pre>
   </section>
 </main>
 
 <script>
-/* ======= small utils ======= */
 const qs=s=>document.querySelector(s), qsa=s=>Array.from(document.querySelectorAll(s));
 const debug = new URLSearchParams(location.search).get('debug')==='1';
 if(debug) qs('#dbg').classList.remove('hidden');
 function log(...a){ if(debug){ const el=qs('#log'); el.textContent+=a.join(' ') + "\n"; el.scrollTop=el.scrollHeight; } }
 window.onerror=(m,src,ln,col,err)=>{ try{log('ERROR:', m, src+':'+ln+':'+col, err&&err.stack?err.stack:'');}catch(_){}; return false; };
-window.addEventListener('unhandledrejection', e=>{ try{log('PROMISE REJECTION:', e.reason && (e.reason.stack||e.reason));}catch(_){}; });
+window.addEventListener('unhandledrejection', e=>{ try{log('PROMISE:', e.reason && (e.reason.stack||e.reason));}catch(_){}; });
+
 function z2(n){ return String(n).padStart(2,'0'); }
 function ymd(d){ return `${d.getFullYear()}-${z2(d.getMonth()+1)}-${z2(d.getDate())}`; }
 function ymdhm(t){ const d=new Date(t); return `${d.getFullYear()}-${z2(d.getMonth()+1)}-${z2(d.getDate())} ${z2(d.getHours())}:${z2(d.getMinutes())}`; }
-function normalizeText(t){ if(!t) return ''; t=t.replace(/<rt>.*?<\\/rt>/g,'').replace(/<[^>]+>/g,''); t=t.replace(/[\s\u3000]/g,'').replace(/[、，]/g,'、').replace(/[。．]/g,'。'); t=t.replace(/[「」『』（）()［］\\[\\]〈〉<>・… ,\\.\\-\\?\\!！?]/g,''); t=t.replace(/[Ａ-Ｚａ-ｚ０-９]/g,s=>String.fromCharCode(s.charCodeAt(0)-0xFEE0)); return t; }
+function normalizeText(t){ if(!t) return ''; t=t.replace(/<rt>.*?<\/rt>/g,'').replace(/<[^>]+>/g,''); t=t.replace(/[\s\u3000]/g,'').replace(/[、，]/g,'、').replace(/[。．]/g,'。'); t=t.replace(/[「」『』（）()［］\[\]〈〉<>・… ,\.\-\?\!！?]/g,''); t=t.replace(/[Ａ-Ｚａ-ｚ０-９]/g,s=>String.fromCharCode(s.charCodeAt(0)-0xFEE0)); return t; }
 function isKanji(ch){ return /[\u4E00-\u9FFF\u3400-\u4DBF]/.test(ch); }
-
-// academic year helpers
 function academicYear(d){ const y=d.getFullYear(); const boundary=new Date(y,3,2); return (d>=boundary)? y : y-1; }
 function parseGrade(label){ const m=String(label||'').match(/小\s*([1-6])/); return m?Number(m[1]):1; }
 function currentGradeNum(st){ const base = st.grade_base || parseGrade(st.grade||'小1'); const baseAy = st.grade_base_ay || academicYear(new Date(st.created_at||Date.now())); const delta = academicYear(new Date()) - baseAy; return Math.min(6, Math.max(1, base + delta)); }
 function currentGradeLabel(st){ return `小${currentGradeNum(st)}`; }
 
-/* ======= DB ======= */
-const DB='oral_roles_v0211'; let db;
+const DB='oral_roles_v0212_lite'; let db;
 function openDB(){
   return new Promise((res,rej)=>{
     const r=indexedDB.open(DB,1);
@@ -328,33 +259,22 @@ const idb={
     const req = studentId ? store.index('student_id').openCursor(IDBKeyRange.only(studentId)) : store.openCursor();
     req.onsuccess=e=>{ const cur=e.target.result; if(cur){ const v={...cur.value,id:cur.primaryKey}; if((startMs==null||v.created_at>=startMs)&&(endMs==null||v.created_at<endMs)) out.push(v); cur.continue(); } else res(out.sort((a,b)=>b.created_at-a.created_at)); };
     req.onerror=()=>rej(req.error);
-  }),
-  saveInvite:(token,student_id,mail)=>new Promise((res,rej)=>{ const r=tx('invites','readwrite').put({token,student_id,mail,created_at:Date.now(),used:false}); r.onsuccess=()=>res(); r.onerror=()=>rej(r.error); }),
-  getInvite:token=>new Promise((res,rej)=>{ const r=tx('invites').get(token); r.onsuccess=()=>res(r.result||null); r.onerror=()=>rej(r.error); }),
-  useInvite:token=>new Promise((res,rej)=>{ const s=tx('invites','readwrite').get(token); s.onsuccess=()=>{ const inv=s.result; if(!inv) return res(false); inv.used=true; tx('invites','readwrite').put(inv).onsuccess=()=>res(true); }; s.onerror=()=>rej(s.error); }),
-  addGuardian:(student_id)=>new Promise((res,rej)=>{ const r=tx('guardians','readwrite').add({student_id,created_at:Date.now()}); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }),
-  listGuardiansByStudent:(student_id)=>new Promise((res,rej)=>{ const out=[]; const c=tx('guardians').index('student_id').openCursor(IDBKeyRange.only(student_id)); c.onsuccess=e=>{ const cur=e.target.result; if(cur){ out.push({...cur.value,id:cur.primaryKey}); cur.continue(); } else res(out); }; c.onerror=()=>rej(c.error); }),
+  })
 };
 
-/* ======= Auth / Roles ======= */
-function setAutoPref(on){ try{ localStorage.setItem('autojump', on?'1':'0'); }catch(_){} }
-function enterRole(role){ try{ if(qs('#rememberRole')) setAutoPref(qs('#rememberRole').checked); localStorage.setItem('last_role', role); }catch(_){}
-  if(role==='s') location.hash='#/s'; else if(role==='g') location.hash='#/g'; else if(role==='t') location.hash='#/t'; setActiveTab(); }
 function teacherAuthed(){ try{ return localStorage.getItem('teacher_auth')==='1'; }catch(_){ return false; } }
 function guardianAuthed(){ try{ return localStorage.getItem('guardian_auth')==='1'; }catch(_){ return false; } }
+function setAutoPref(on){ try{ localStorage.setItem('autojump', on?'1':'0'); }catch(_){} }
+function enterRole(role){ try{ if(qs('#rememberRole')) setAutoPref(qs('#rememberRole').checked); localStorage.setItem('last_role', role); }catch(_){} if(role==='s') location.hash='#/s'; else if(role==='g') location.hash='#/g'; else if(role==='t') location.hash='#/t'; setActiveTab(); }
 function loginTeacher(){ const id=(qs('#loginId')?.value||'').trim(); const pw=(qs('#loginPw')?.value||'').trim(); if(id==='surasura'&&pw==='surasura'){ try{ localStorage.setItem('teacher_auth','1'); }catch(_){} enterRole('t'); } else alert('IDまたはパスワードが違います'); }
-async function guardGuardian(){ if(guardianAuthed()) return true; const pw=prompt('保護者パスワードを入力してください（開発中：mama）'); if(pw==='mama'){ try{ localStorage.setItem('guardian_auth','1'); }catch(_){} return true; } alert('パスワードが違います'); return false; }
+async function guardGuardian(){ if(guardianAuthed()) return true; const pw=prompt('保護者パスワード（開発中：mama）'); if(pw==='mama'){ try{ localStorage.setItem('guardian_auth','1'); }catch(_){} return true; } alert('パスワードが違います'); return false; }
 
-/* ======= Router ======= */
-function updateTopNav(){ const nav=qs('#topNav'); if(!nav) return; const t=qs('#tabT'); const g=qs('#tabG');
-  // 非ログイン時は講師タブ非表示。保護者は常に表示（PWゲートは別）
-  t.style.display = teacherAuthed()? 'inline-block':'none';
-  g.style.display = 'inline-block';
-}
+function updateTopNav(){ const t=qs('#tabT'); t.style.display = teacherAuthed()? 'inline-block':'none'; qs('#tabG').style.display='inline-block'; }
+
 function setActiveTab(){
   let raw=location.hash||'#/start'; let h=raw.split('?')[0];
   if(h.startsWith('#/t') && !teacherAuthed()){ h='#/start'; if(location.hash!=='#/start'){ location.hash='#/start'; } }
-  if(h.startsWith('#/g') && !guardianAuthed()){ // 直接URLで来た場合もプロンプト
+  if(h.startsWith('#/g') && !guardianAuthed()){
     (async()=>{ const ok=await guardGuardian(); if(ok){ location.hash='#/g'; setActiveTab(); } else { location.hash='#/start'; setActiveTab(); } })();
     h='#/start';
   }
@@ -367,43 +287,33 @@ function setActiveTab(){
   qs('#viewG').classList.toggle('hidden', !h.startsWith('#/g'));
   updateTopNav();
   if(h.startsWith('#/t')) refreshTeacher();
-  if(h.startsWith('#/g')) initGuardianFromToken();
+  if(h.startsWith('#/g')) initGuardianToday();
 }
 window.addEventListener('hashchange', setActiveTab);
 setTimeout(()=>{
   qsa('a.tab').forEach(a=>a.addEventListener('click',e=>{ const href=a.getAttribute('href'); if(!href) return; e.preventDefault(); if(href==="#/t" && !teacherAuthed()){ location.hash='#/start'; setActiveTab(); qs('#loginId')?.focus(); return; } if(href==="#/g" && !guardianAuthed()){ guardGuardian().then(ok=>{ if(ok) { location.hash='#/g'; setActiveTab(); } }); return; } location.hash=href; setActiveTab(); }));
-  qs('#goS')?.addEventListener('click',()=>enterRole('s'));
-  qs('#goG')?.addEventListener('click',async()=>{ const ok=await guardGuardian(); if(ok) enterRole('g'); });
-  qs('#goSkip')?.addEventListener('click',()=>enterRole('s'));
-  qs('#goT')?.addEventListener('click',()=>{ if(teacherAuthed()) enterRole('t'); else { location.hash='#/start'; setActiveTab(); qs('#loginId')?.focus(); } });
   qs('#loginBtn')?.addEventListener('click',loginTeacher);
   qs('#loginId')?.addEventListener('keydown',e=>{ if(e.key==='Enter') loginTeacher(); });
   qs('#loginPw')?.addEventListener('keydown',e=>{ if(e.key==='Enter') loginTeacher(); });
 },0);
 
-/* ======= Recording / ASR / Viz ======= */
-let mediaStream, audioCtx, analyser, procNode, recorder, recChunks=[], asr, asrActive=false, isPaused=false; let voicedMs=0, f0Stats={vals:[],min:9999,max:0};
-const viz=qs('#viz'); const vctx=viz.getContext('2d');
-function drawViz(timeData,f0){ const w=viz.width,h=viz.height; vctx.fillStyle='#0b1322'; vctx.fillRect(0,0,w,h); vctx.strokeStyle='#88aaff'; vctx.beginPath(); for(let i=0;i<timeData.length;i++){ const x=i/timeData.length*w; const y=(timeData[i]/128)*0.45*h+0.25*h; if(i===0) vctx.moveTo(x,y); else vctx.lineTo(x,y);} vctx.stroke(); vctx.fillStyle='rgba(80,200,255,.5)'; f0.slice(-60).forEach((hz,idx)=>{ if(hz>0){ const x=w-(60-idx)*(w/60); const y=0.75*h+(1-Math.min(hz,500)/500)*0.25*h; vctx.beginPath(); vctx.arc(x,y,2,0,Math.PI*2); vctx.fill(); }}); }
-function autocorrF0(buf,sr){ const minLag=Math.floor(sr/500), maxLag=Math.floor(sr/70); let bestLag=0,best=0; for(let lag=minLag;lag<=maxLag;lag++){ let c=0; for(let i=0;i<buf.length-lag;i++) c+=buf[i]*buf[i+lag]; if(c>best){ best=c; bestLag=lag; } } if(bestLag===0||best<1e-3) return 0; return sr/bestLag; }
-async function startRec(){ mediaStream=await navigator.mediaDevices.getUserMedia({audio:true}); recorder=new MediaRecorder(mediaStream); recChunks=[]; recorder.ondataavailable=e=>{ if(e.data.size>0) recChunks.push(e.data); }; recorder.start(); audioCtx=new (window.AudioContext||window.webkitAudioContext)(); const src=audioCtx.createMediaStreamSource(mediaStream); analyser=audioCtx.createAnalyser(); analyser.fftSize=1024; procNode=audioCtx.createScriptProcessor(1024,1,1); const timeBuf=new Uint8Array(analyser.fftSize); const f0Arr=f0Stats.vals=[]; f0Stats.min=9999; f0Stats.max=0; voicedMs=0; procNode.onaudioprocess=e=>{ const ch=e.inputBuffer.getChannelData(0); let rms=0; for(let i=0;i<ch.length;i++) rms+=ch[i]*ch[i]; rms=Math.sqrt(rms/ch.length); if(rms>0.01 && !isPaused){ voicedMs+=(ch.length/audioCtx.sampleRate)*1000; const f0=autocorrF0(ch,audioCtx.sampleRate); if(f0>60&&f0<500){ f0Arr.push(f0); if(f0<f0Stats.min) f0Stats.min=f0; if(f0>f0Stats.max) f0Stats.max=f0; } else f0Arr.push(0); } else f0Arr.push(0); analyser.getByteTimeDomainData(timeBuf); drawViz(timeBuf,f0Arr); }; src.connect(analyser); analyser.connect(procNode); procNode.connect(audioCtx.destination); qs('#recStatus')?.textContent='録音中…'; qs('#readingText').classList.add('reading-anim'); viz.classList.add('glow'); }
+/* ===== Recording / ASR ===== */
+let mediaStream, audioCtx, analyser, procNode, recorder, recChunks=[], isPaused=false;
+async function startRec(){ mediaStream=await navigator.mediaDevices.getUserMedia({audio:true}); recorder=new MediaRecorder(mediaStream); recChunks=[]; recorder.ondataavailable=e=>{ if(e.data.size>0) recChunks.push(e.data); }; recorder.start(); audioCtx=new (window.AudioContext||window.webkitAudioContext)(); const src=audioCtx.createMediaStreamSource(mediaStream); analyser=audioCtx.createAnalyser(); analyser.fftSize=1024; procNode=audioCtx.createScriptProcessor(1024,1,1); procNode.onaudioprocess=e=>{}; src.connect(analyser); analyser.connect(procNode); procNode.connect(audioCtx.destination); qs('#readingText').classList.add('reading-anim'); }
 async function pauseRec(){ if(!recorder) return; if('pause' in recorder && recorder.state==='recording'){ recorder.pause(); isPaused=true; } }
 async function resumeRec(){ if(!recorder) return; if('resume' in recorder && recorder.state==='paused'){ recorder.resume(); isPaused=false; } }
-async function stopRec(){ try{ recorder && recorder.state!=='inactive' && recorder.stop(); }catch(_){} mediaStream && mediaStream.getTracks().forEach(t=>t.stop()); procNode && procNode.disconnect(); analyser && analyser.disconnect(); if(audioCtx) try{ await audioCtx.close(); }catch(_){} qs('#recStatus')?.textContent='停止'; qs('#readingText').classList.remove('reading-anim'); viz.classList.remove('glow'); }
-function startASR(){ const SR=window.SpeechRecognition||window.webkitSpeechRecognition; if(!SR){ alert('このブラウザはWeb Speech APIに未対応です。Chromeをお試しください。'); return false; } asr=new SR(); asr.lang='ja-JP'; asr.interimResults=true; asr.continuous=true; let asrText=''; const area=qs('#asrText'); asr.onresult=e=>{ let tmp=''; for(let i=e.resultIndex;i<e.results.length;i++){ const r=e.results[i]; if(r.isFinal) asrText+=r[0].transcript; else tmp+=r[0].transcript; } area.value=asrText+tmp; }; asr.onend=()=>{ asrActive=false; }; asr.start(); asrActive=true; return true; }
+async function stopRec(){ try{ recorder && recorder.state!=='inactive' && recorder.stop(); }catch(_){} mediaStream && mediaStream.getTracks().forEach(t=>t.stop()); procNode && procNode.disconnect(); analyser && analyser.disconnect(); if(audioCtx) try{ await audioCtx.close(); }catch(_){} qs('#readingText').classList.remove('reading-anim'); }
+function startASR(){ const SR=window.SpeechRecognition||window.webkitSpeechRecognition; if(!SR){ alert('このブラウザはWeb Speech APIに未対応です。Chromeをお試しください。'); return false; } const asr=new SR(); asr.lang='ja-JP'; asr.interimResults=true; asr.continuous=true; let asrText=''; const area=qs('#asrText'); asr.onresult=e=>{ let tmp=''; for(let i=e.resultIndex;i<e.results.length;i++){ const r=e.results[i]; if(r.isFinal) asrText+=r[0].transcript; else tmp+=r[0].transcript; } area.value=asrText+tmp; }; asr.start(); return true; }
 
-function levenshteinAlign(a,b){ const n=a.length,m=b.length,dp=Array.from({length:n+1},()=>Array(m+1).fill(0)); for(let i=0;i<=n;i++) dp[i][0]=i; for(let j=0;j<=m;j++) dp[0][j]=j; for(let i=1;i<=n;i++) for(let j=1;j<=m;j++){ const cost=a[i-1]===b[j-1]?0:1; dp[i][j]=Math.min(dp[i-1][j]+1,dp[i][j-1]+1,dp[i-1][j-1]+cost);} let i=n,j=m,ops=[]; while(i>0||j>0){ if(i>0 && dp[i][j]===dp[i-1][j]+1){ ops.push({op:'del',ref:a[i-1],hyp:''}); i--; } else if(j>0 && dp[i][j]===dp[i][j-1]+1){ ops.push({op:'ins',ref:'',hyp:b[j-1]}); j--; } else { const op=(a[i-1]===b[j-1])?'eq':'sub'; ops.push({op,ref:a[i-1],hyp:b[j-1]}); i--; j--; } } ops.reverse(); return {dist:dp[n][m],ops}; }
-function highlightAlign(ops){ let refHtml='',hypHtml=''; for(const o of ops){ if(o.op==='eq'){ refHtml+=`<span>${o.ref}</span>`; hypHtml+=`<span>${o.hyp}</span>`; } else if(o.op==='sub'){ refHtml+=`<span class="hl-miss">${o.ref}</span>`; hypHtml+=`<span class="hl-miss">${o.hyp}</span>`; } else if(o.op==='del'){ refHtml+=`<span class="hl-miss">${o.ref}</span>`; hypHtml+=`<span>∅</span>`; } else if(o.op==='ins'){ refHtml+=`<span>∅</span>`; hypHtml+=`<span class="hl-miss">${o.hyp}</span>`; } } return {refHtml,hypHtml}; }
-function arrMean(a){ if(!a.length) return 0; return a.reduce((x,y)=>x+y,0)/a.length; }
-function arrSdPos(a){ const v=a.filter(x=>x>0); const m=arrMean(v); const s=arrMean(v.map(x=>(x-m)*(x-m))); return Math.sqrt(s||0); }
-function analyzeAll(refRaw,hypRaw,voicedMsLocal,f0){ const ref=normalizeText(refRaw), hyp=normalizeText(hypRaw); const {dist,ops}=levenshteinAlign(ref.split(''),hyp.split('')); const cer=(ref.length?dist/ref.length:1); const missKanji={}; ops.forEach(o=>{ if((o.op==='sub'||o.op==='del') && isKanji(o.ref)) missKanji[o.ref]=(missKanji[o.ref]||0)+1; }); const missList=Object.entries(missKanji).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${k}:${v}`); const minutes=Math.max(1e-6, voicedMsLocal/60000); const cpm=Math.round(hyp.length/minutes); const f0min=Math.round((f0.min===9999)?0:f0.min), f0max=Math.round(f0.max||0); const f0range=(f0max>0&&f0min>0)?(f0max-f0min):0, f0sd=Math.round(arrSdPos(f0.vals)); let prosody=0; if(f0range>40) prosody+=10; else if(f0range>20) prosody+=6; else if(f0range>10) prosody+=3; if(f0sd>30) prosody+=10; else if(f0sd>15) prosody+=6; else if(f0sd>8) prosody+=3; prosody=Math.min(20,prosody); let acc=Math.max(0,40*(1-cer)); let spd=0; if(cpm>=180&&cpm<=300) spd=20; else if(cpm<180) spd=Math.max(0,20*(cpm/180)); else spd=Math.max(0,20*(1-(cpm-300)/300)); const overall=Math.round(acc+prosody+spd); const {refHtml,hypHtml}=highlightAlign(ops); return {cpm,cer:Number(cer.toFixed(3)),f0range,prosodyScore:prosody,overall,missKanji,missList,refHtml,hypHtml}; }
+/* ===== Analysis (lite heuristic) ===== */
+function analyzeLite(refRaw,hypRaw){ const ref=normalizeText(refRaw), hyp=normalizeText(hypRaw); const cpm=Math.round(hyp.length/Math.max(1e-6,1)); const cer=ref.length?Math.max(0,Math.min(1,(ref.length-hyp.length)/ref.length)):0; const overall=Math.max(0,Math.min(100,Math.round(85 - cer*40 + Math.min(20,Math.floor(cpm/30))))); return {cpm,cer,f0range:0,prosodyScore:0,overall,missList:[],refHtml:refRaw,hypHtml:hypRaw}; }
 
-/* ======= Student UI ======= */
+/* ===== Student UI ===== */
 let currentStudentId=Number(localStorage.getItem('student_id')||0);
 function updateStudentBadge(){ if(!currentStudentId){ qs('#studentBadge').textContent='未設定'; return; } idb.listStudents().then(l=>{ const st=l.find(x=>x.id===currentStudentId); qs('#studentBadge').textContent= st? `${st.name}（${currentGradeLabel(st)}）` : '未設定'; }); }
 async function chooseStudent(){ const list=await idb.listStudents(); if(!list.length){ alert('まず講師画面（#/t）で生徒を追加してください。'); return; } const name=prompt('生徒名を選んで入力してください\n'+list.map(s=>`・${s.name}（${currentGradeLabel(s)}｜${s.school||'学校'}）`).join('\n')); const found=list.find(s=>s.name===name); if(!found){ alert('見つかりませんでした'); return; } currentStudentId=found.id; localStorage.setItem('student_id',String(currentStudentId)); updateStudentBadge(); refreshStudentTexts(); }
 async function loadPassageByNo(no){ const p=await idb.getPassage(no); if(!p){ alert('登録されていない番号です'); return; } qs('#readingText').textContent=p.text||''; qs('#passageS').value=p.text||''; qs('#readingText').scrollTop=0; }
-async function refreshStudentTexts(){ const sel=qs('#textSelectS'); if(!sel) return; sel.innerHTML=''; const passages=await idb.listPassages(); const rows=await idb.listSessions(currentStudentId); const countByNo={}; rows.forEach(r=>{ const day=ymd(new Date(r.created_at)); countByNo[r.text_no]= (countByNo[r.text_no]||0)+1; }); passages.sort((a,b)=>String(a.no).localeCompare(String(b.no))).forEach(p=>{ const n=countByNo[p.no]||0; const o=document.createElement('option'); o.value=p.no; o.textContent=`${p.no} ${p.title||''}（${n}回）`; sel.appendChild(o); }); }
+async function refreshStudentTexts(){ const sel=qs('#textSelectS'); if(!sel) return; sel.innerHTML=''; const passages=await idb.listPassages(); const rows=await idb.listSessions(currentStudentId); const countByNo={}; rows.forEach(r=>{ const k=r.text_no; countByNo[k]=(countByNo[k]||0)+1; }); passages.sort((a,b)=>String(a.no).localeCompare(String(b.no))).forEach(p=>{ const n=countByNo[p.no]||0; const o=document.createElement('option'); o.value=p.no; o.textContent=`${p.no} ${p.title||''}（${n}回）`; sel.appendChild(o); }); }
 
 qs('#setStudentBtn').onclick=chooseStudent;
 qs('#loadPassageBtn').onclick=()=>{ const no=qs('#textNo').value.trim(); if(no) loadPassageByNo(no); };
@@ -415,63 +325,42 @@ qs('#pauseBtn').onclick= async ()=>{ if(!recorder) return; if(isPaused){ await r
 qs('#stopBtn').onclick= async ()=>{ await stopRec(); qs('#startBtn').disabled=false; qs('#stopBtn').disabled=true; qs('#pauseBtn').disabled=true; qs('#pauseBtn').textContent='⏸ 一時停止'; qs('#dlAudioBtn').disabled=false; };
 qs('#dlAudioBtn').onclick=()=>{ if(!recChunks.length) return; const blob=new Blob(recChunks,{type:'audio/webm'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`reading_${Date.now()}.webm`; a.click(); };
 
-qs('#analyzeBtn').onclick=()=>{ const refRaw=qs('#passageS').value.trim()||qs('#readingText').textContent.trim(); const hypRaw=qs('#asrText').value.trim(); if(!refRaw||!hypRaw){ alert('本文と認識結果が必要です'); return; } const r=analyzeAll(refRaw,hypRaw,voicedMs,f0Stats); qs('#speedCpm').textContent=r.cpm; qs('#cer').textContent=r.cer; qs('#f0range').textContent=r.f0range; qs('#prosodyScore').textContent=r.prosodyScore; qs('#overall').textContent=r.overall; qs('#missKanjis').textContent=r.missList.join('　'); qs('#refHl').innerHTML=r.refHtml; qs('#hypHl').innerHTML=r.hypHtml; qs('#scoreStatus').textContent='採点済み'; qs('#saveBtn').disabled=false; qs('#saveBtn').onclick= async ()=>{ if(!currentStudentId){ alert('この端末の生徒を設定してください'); return; } const no = (qs('#textSelectS').value||qs('#textNo').value||'').trim(); const row={ created_at:Date.now(), student_id:currentStudentId, text_no:no, cpm:r.cpm, cer:r.cer, f0range:r.f0range, prosodyScore:r.prosodyScore, overall:r.overall, miss_kanji:r.missKanji }; await idb.saveSession(row); await updateStreakUI(); qs('#scoreStatus').textContent='保存済み'; speakResult(r.overall); alert('保存しました'); }; };
-
-async function updateStreakUI(){ if(!currentStudentId){ qs('#streak').textContent='0'; qs('#totalDays').textContent='0'; return; } const rows=await idb.listSessions(currentStudentId); const days=[...new Set(rows.map(r=>ymd(new Date(r.created_at))))].sort(); const total=days.length; let streak=0; if(total){ let cur=new Date(); cur.setHours(0,0,0,0); let i=days.length-1; // if no record today, allow streak from yesterday
-    const todayStr=ymd(cur); if(days[i]!==todayStr){ // start from yesterday
-      cur.setDate(cur.getDate()-1);
-    }
-    while(i>=0){ const dstr=ymd(cur); if(days[i]===dstr){ streak++; i--; cur.setDate(cur.getDate()-1); } else break; }
-  }
-  qs('#streak').textContent=String(streak); qs('#totalDays').textContent=String(total); }
 function speakResult(overall){ try{ const s=new SpeechSynthesisUtterance(`採点結果、総合 ${overall} 点。おつかれさま。`); s.lang='ja-JP'; speechSynthesis.speak(s);}catch(_){} }
 
-/* ======= Teacher UI ======= */
-async function refreshTeacher(){ const list=await idb.listStudents(); const schoolF=(qs('#searchSchool')?.value.trim())||''; const gradeF=(qs('#searchGrade')?.value)||''; const filtered=list.filter(s=>{ const okSchool=!schoolF||(String(s.school||'').includes(schoolF)); const okGrade=!gradeF || (currentGradeNum(s)===Number(gradeF)); return okSchool&&okGrade; }); const sel=qs('#studentList'); if(sel){ sel.innerHTML=''; filtered.forEach(s=>{ const o=document.createElement('option'); o.value=s.id; o.textContent=`${s.name}（${currentGradeLabel(s)}｜${s.school||'学校未登録'}）`; sel.appendChild(o); }); } const gs=qs('#guardianStudent'); if(gs){ gs.innerHTML=''; filtered.forEach(s=>{ const o=document.createElement('option'); o.value=s.id; o.textContent=`${s.name}（${currentGradeLabel(s)}｜${s.school||'学校未登録'}）`; gs.appendChild(o); }); } await refreshToday(); await listPassages(); }
+async function updateStreakUI(){ if(!currentStudentId){ qs('#streak').textContent='0'; qs('#totalDays').textContent='0'; return; } const rows=await idb.listSessions(currentStudentId); const days=[...new Set(rows.map(r=>ymd(new Date(r.created_at))))].sort(); const total=days.length; let streak=0; if(total){ let cur=new Date(); cur.setHours(0,0,0,0); let i=days.length-1; const todayStr=ymd(cur); if(days[i]!==todayStr){ cur.setDate(cur.getDate()-1); } while(i>=0){ const dstr=ymd(cur); if(days[i]===dstr){ streak++; i--; cur.setDate(cur.getDate()-1); } else break; } } qs('#streak').textContent=String(streak); qs('#totalDays').textContent=String(total); }
+
+qs('#analyzeBtn').onclick=()=>{ const refRaw=qs('#passageS').value.trim()||qs('#readingText').textContent.trim(); const hypRaw=qs('#asrText').value.trim(); if(!refRaw||!hypRaw){ alert('本文と認識結果が必要です'); return; } const r=analyzeLite(refRaw,hypRaw); qs('#speedCpm').textContent=r.cpm; qs('#cer').textContent=r.cer; qs('#f0range').textContent=r.f0range; qs('#prosodyScore').textContent=r.prosodyScore; qs('#overall').textContent=r.overall; qs('#missKanjis').textContent=r.missList.join('　'); qs('#refHl').innerHTML=r.refHtml; qs('#hypHl').innerHTML=r.hypHtml; qs('#scoreStatus').textContent='採点済み'; qs('#saveBtn').disabled=false; qs('#saveBtn').onclick= async ()=>{ if(!currentStudentId){ alert('この端末の生徒を設定してください'); return; } const no = (qs('#textSelectS').value||qs('#textNo').value||'').trim(); const row={ created_at:Date.now(), student_id:currentStudentId, text_no:no, cpm:r.cpm, cer:r.cer, f0range:r.f0range, prosodyScore:r.prosodyScore, overall:r.overall, miss_kanji:{} }; await idb.saveSession(row); await updateStreakUI(); qs('#scoreStatus').textContent='保存済み'; speakResult(r.overall); alert('保存しました'); }; };
+
+/* ===== Teacher ===== */
+async function refreshTeacher(){ const list=await idb.listStudents(); const schoolF=(qs('#searchSchool')?.value.trim())||''; const gradeF=(qs('#searchGrade')?.value)||''; const filtered=list.filter(s=>{ const okSchool=!schoolF||(String(s.school||'').includes(schoolF)); const okGrade=!gradeF || (currentGradeNum(s)===Number(gradeF)); return okSchool&&okGrade; }); const sel=qs('#studentList'); if(sel){ sel.innerHTML=''; filtered.forEach(s=>{ const o=document.createElement('option'); o.value=s.id; o.textContent=`${s.name}（${currentGradeLabel(s)}｜${s.school||'学校未登録'}）`; sel.appendChild(o); }); } await listPassages(); await refreshToday(); }
 qs('#addStudentBtn').onclick= async ()=>{ const name=qs('#studentName').value.trim(); const school=qs('#studentSchool').value.trim(); const gradeLabel=qs('#studentGrade').value; if(!name) return alert('氏名を入れてください'); const s={ name, school, grade:gradeLabel, grade_base:parseGrade(gradeLabel), grade_base_ay:academicYear(new Date()) }; await idb.addStudent(s); qs('#studentName').value=''; qs('#studentSchool').value=''; await refreshTeacher(); };
 qs('#delStudentBtn').onclick= async ()=>{ const id=Number(qs('#studentList').value||0); if(!id) return; if(!confirm('この生徒を削除しますか（履歴は残ります）？')) return; await idb.delStudent(id); await refreshTeacher(); };
 
+/* Passages */
 async function listPassages(){ const t=qs('#passageTable tbody'); if(!t) return; t.innerHTML=''; const rows=await idb.listPassages(); rows.sort((a,b)=>String(a.no).localeCompare(String(b.no))); rows.forEach(r=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${r.no}</td><td>${r.title||''}</td><td>${(r.text||'').slice(0,22)}…</td>`; tr.onclick=()=>{ qs('#textNoT').value=r.no; qs('#titleT').value=r.title||''; qs('#passageT').value=r.text||''; }; t.appendChild(tr); }); }
 qs('#savePassageBtn').onclick= async ()=>{ const no=qs('#textNoT').value.trim(); const title=qs('#titleT').value.trim(); const text=qs('#passageT').value.trim(); if(!no||!text) return alert('番号と本文を入れてください'); await idb.savePassage(no,title,text); await listPassages(); alert('保存/更新しました'); };
 qs('#delPassageBtn').onclick= async ()=>{ const no=qs('#textNoT').value.trim(); if(!no) return; if(!confirm('削除しますか？')) return; await idb.delPassage(no); await listPassages(); };
 qs('#listPassagesBtn').onclick=listPassages;
 
-/* ======= Today digest ======= */
-async function refreshToday(){ const today=new Date(); today.setHours(0,0,0,0); const start=today.getTime(), end=start+86400000; const rows=await idb.listSessions(null,start,end); const t=qs('#todayTable tbody'); if(t) t.innerHTML=''; const students=await idb.listStudents(); const sMap=new Map(students.map(s=>[s.id,s])); const aggKanji={}; rows.forEach(r=>{ const st=sMap.get(r.student_id)||{name:'?',grade:'?',school:''}; if(t){ const tr=document.createElement('tr'); tr.innerHTML=`<td>${ymdhm(r.created_at)}</td><td>${st.name}</td><td>${currentGradeLabel(st)}</td><td>${r.text_no||''}</td><td>${r.cpm}</td><td>${r.cer}</td><td>${r.f0range}</td><td>${r.overall}</td>`; t.appendChild(tr);} for(const k in (r.miss_kanji||{})){ aggKanji[k]=(aggKanji[k]||0)+r.miss_kanji[k]; } }); const rank=Object.entries(aggKanji).sort((a,b)=>b[1]-a[1]).slice(0,20).map(([k,v])=>`${k}:${v}`); const kr=qs('#kanjiRankToday'); if(kr) kr.textContent=rank.join('　'); }
+/* Today digest */
+async function refreshToday(){ const today=new Date(); today.setHours(0,0,0,0); const start=today.getTime(), end=start+86400000; const rows=await idb.listSessions(null,start,end); const t=qs('#todayTable tbody'); if(t) t.innerHTML=''; const students=await idb.listStudents(); const sMap=new Map(students.map(s=>[s.id,s])); rows.forEach(r=>{ const st=sMap.get(r.student_id)||{name:'?',grade:'?',school:''}; if(t){ const tr=document.createElement('tr'); tr.innerHTML=`<td>${ymdhm(r.created_at)}</td><td>${st.name}</td><td>${currentGradeLabel(st)}</td><td>${r.text_no||''}</td><td>${r.cpm}</td><td>${r.cer}</td><td>${r.f0range}</td><td>${r.overall}</td>`; t.appendChild(tr);} }); }
 qs('#refreshTodayBtn').onclick=refreshToday;
 qs('#searchStudentsBtn')?.addEventListener('click',refreshTeacher);
 qs('#searchSchool')?.addEventListener('keydown',e=>{ if(e.key==='Enter') refreshTeacher(); });
 qs('#searchGrade')?.addEventListener('change',refreshTeacher);
-qs('#exportCsvBtn').onclick= async ()=>{ const rows=await idb.listSessions(); const hdr=['datetime','student','grade_current','text_no','cpm','cer','f0range','prosody','overall','miss_kanji_json']; const students=await idb.listStudents(); const sMap=new Map(students.map(s=>[s.id,s])); const lines=[hdr.join(',')]; rows.forEach(r=>{ const st=sMap.get(r.student_id)||{name:'?',grade:'?',school:''}; const miss=JSON.stringify(r.miss_kanji||{}); const vals=[new Date(r.created_at).toISOString(),st.name,currentGradeLabel(st),r.text_no||'',r.cpm,r.cer,r.f0range,r.prosodyScore,r.overall,miss].map(v=>`"${String(v).replace(/"/g,'""')}"`); lines.push(vals.join(',')); }); const blob=new Blob([lines.join('\n')],{type:'text/csv'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='oral_reading_history.csv'; a.click(); };
+qs('#exportCsvBtn').onclick= async ()=>{ const rows=await idb.listSessions(); const hdr=['datetime','student','grade_current','text_no','cpm','cer','f0range','prosody','overall']; const students=await idb.listStudents(); const sMap=new Map(students.map(s=>[s.id,s])); const lines=[hdr.join(',')]; rows.forEach(r=>{ const st=sMap.get(r.student_id)||{name:'?',grade:'?',school:''}; const vals=[new Date(r.created_at).toISOString(),st.name,currentGradeLabel(st),r.text_no||'',r.cpm,r.cer,r.f0range,r.prosodyScore||0,r.overall].map(v=>`"${String(v).replace(/"/g,'""')}"`); lines.push(vals.join(',')); }); const blob=new Blob([lines.join('\n')],{type:'text/csv'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='oral_reading_history.csv'; a.click(); };
 
-/* ======= Guardian ======= */
-function randToken(){ return Math.random().toString(36).slice(2)+Date.now().toString(36); }
-qs('#genInviteBtn').onclick= async ()=>{ const student_id=Number(qs('#guardianStudent').value||0); if(!student_id) return alert('生徒を選択してください'); const mail=(qs('#guardianMail').value||'').trim(); const token=randToken(); await idb.saveInvite(token,student_id,mail); const url=location.href.split('#')[0]+'#/g?token='+encodeURIComponent(token); qs('#inviteLink').value=url; navigator.clipboard?.writeText(url).catch(()=>{}); const st=(await idb.listStudents()).find(s=>s.id===student_id); const subj='【招待】音読結果閲覧'; const body=`${st?st.name:'お子さま'}の音読結果はこちら：\n${url}\n\n※端末のホーム画面に追加しておくと便利です。`; qs('#mailtoBtn').href = `mailto:${encodeURIComponent(mail)}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`; alert('招待リンクを作成しました。メールに貼り付けて送ってください。'); };
-qs('#copyInviteBtn').onclick=()=>{ const i=qs('#inviteLink'); i.select(); document.execCommand('copy'); };
-async function initGuardianFromToken(){ const hash=location.hash||''; const q=hash.split('?')[1]||''; const params=new URLSearchParams(q); const token=params.get('token'); if(token){ const inv=await idb.getInvite(token); if(inv && !inv.used){ await idb.addGuardian(inv.student_id); await idb.useInvite(token); qs('#guardianBind').textContent='この端末は招待によりお子さまと連携されました。'; localStorage.setItem('guardian_student_id', String(inv.student_id)); localStorage.setItem('guardian_auth','1'); } }
-  const sid=Number(localStorage.getItem('guardian_student_id')||0); if(!sid){ qs('#gStudent').textContent='未連携'; return; } const st=(await idb.listStudents()).find(s=>s.id===sid); qs('#gStudent').textContent= st? `${st.name}（${currentGradeLabel(st)}）` : '未連携'; const today=new Date(); today.setHours(0,0,0,0); const rows=await idb.listSessions(sid,today.getTime(),today.getTime()+86400000); const tb=qs('#gTable tbody'); if(tb) tb.innerHTML=''; rows.forEach(r=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${ymdhm(r.created_at)}</td><td>${r.text_no||''}</td><td>${r.cpm}</td><td>${r.cer}</td><td>${r.overall}</td>`; tb?.appendChild(tr); }); }
+/* Guardian (today only, via PW) */
+async function initGuardianToday(){ const sid=Number(localStorage.getItem('guardian_student_id')||0); if(!sid){ qs('#gStudent').textContent='未連携'; return; } const st=(await idb.listStudents()).find(s=>s.id===sid); qs('#gStudent').textContent= st? `${st.name}（${currentGradeLabel(st)}）` : '未連携'; const today=new Date(); today.setHours(0,0,0,0); const rows=await idb.listSessions(sid,today.getTime(),today.getTime()+86400000); const tb=qs('#gTable tbody'); if(tb) tb.innerHTML=''; rows.forEach(r=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${ymdhm(r.created_at)}</td><td>${r.text_no||''}</td><td>${r.cpm}</td><td>${r.cer}</td><td>${r.overall}</td>`; tb?.appendChild(tr); }); }
 qs('#gInstallBtn').onclick=()=>{ alert('ホーム画面に追加：\n1) 右上メニュー（⋮ / 共有）→「ホーム画面に追加」\n2) 追加後はそのアイコンから起動できます。'); };
 
-/* ======= Init / Samples / SW ======= */
-async function injectSamplesIfEmpty(){ const ps=await idb.listPassages(); if(ps.length>=5) return; const grades=[1,2,3,4,5,6]; for(const g of grades){ for(let i=1;i<=10;i++){ const no=`G${g}-${String(i).padStart(3,'0')}`; const title=`小${g}サンプル${String(i).padStart(2,'0')}`; const text=`小${g}のサンプル文章 ${String(i).padStart(2,'0')}。きょうは良い天気です。川のながれがきらきら光ります。`; await idb.savePassage(no,title,text); } } }
+/* Samples */
+async function injectSamplesIfEmpty(){ const ps=await idb.listPassages(); if(ps.length>=5) return; for(let g=1; g<=6; g++){ for(let i=1;i<=10;i++){ const no=`G${g}-${String(i).padStart(3,'0')}`; const title=`小${g}サンプル${String(i).padStart(2,'0')}`; const text=`小${g}のサンプル文章 ${String(i).padStart(2,'0')}。きょうは良い天気です。川のながれがきらきら光ります。`; await idb.savePassage(no,title,text); } } }
 
-async function init(){ try{ await openDB(); }catch(e){ log('IndexedDB error:', e); alert('初期化に失敗しました。読み取り専用モードで続行します。'); }
-  if('serviceWorker' in navigator){ const ENABLE_SW=!location.hostname.endsWith('github.io'); if(ENABLE_SW){ const sw=`self.addEventListener('install',e=>{e.waitUntil(caches.open('oral-roles-v0211').then(c=>c.addAll(['./'])));}); self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)));});`; const blob=new Blob([sw],{type:'text/javascript'}); try{ await navigator.serviceWorker.register(URL.createObjectURL(blob)); log('SW registered'); }catch(e){ log('SW failed',e); } } else log('ServiceWorker disabled on github.io'); }
-  await injectSamplesIfEmpty();
-  // autojump
-  try{ const auto=localStorage.getItem('autojump')==='1'; const last=localStorage.getItem('last_role'); const atStart=(!location.hash||location.hash==='#'||location.hash==='#/'||location.hash==='#/start'); if(auto && atStart && last){ if(last==='t'){ if(teacherAuthed()) location.hash='#/t'; } else if(last==='s') location.hash='#/s'; else if(last==='g') { if(guardianAuthed()) location.hash='#/g'; } } }catch(_){}
-  setActiveTab();
-  updateStreakUI();
-  refreshStudentTexts();
-  selfTest();
-}
-// Early route
-setActiveTab();
-init().catch(e=>log('init failed:',e));
-
-/* ======= SelfTest ======= */
-function assert(cond,msg){ if(!cond){ console.error('[TEST] FAIL:',msg); log('[TEST] FAIL:',msg); } else { console.log('[TEST] OK:',msg); log('[TEST] OK:',msg); } }
-function selfTest(){ assert(!!qs('#goS') && !!qs('#goG') && !!qs('#loginBtn'),'Landing controls present'); location.hash='#/start'; setActiveTab(); assert(!qs('#landingCover').classList.contains('hidden') && document.body.classList.contains('landing-active'),'Landing overlay visible/active'); location.hash='#/s'; setActiveTab(); assert(!qs('#viewS').classList.contains('hidden'),'Student view shows'); location.hash='#/t'; setActiveTab(); assert(qs('#viewT').classList.contains('hidden'),'Teacher guarded when not logged in'); const oldT=localStorage.getItem('teacher_auth'); localStorage.setItem('teacher_auth','1'); location.hash='#/t'; setActiveTab(); assert(!qs('#viewT').classList.contains('hidden'),'Teacher shows after auth'); if(oldT==null) localStorage.removeItem('teacher_auth'); else localStorage.setItem('teacher_auth',oldT); }
+/* Init */
+function autoJump(){ try{ const auto=localStorage.getItem('autojump')==='1'; const last=localStorage.getItem('last_role'); const atStart=(!location.hash||location.hash==='#'||location.hash==='#/'||location.hash==='#/start'); if(auto && atStart && last){ if(last==='t'){ if(teacherAuthed()) location.hash='#/t'; } else if(last==='s') location.hash='#/s'; else if(last==='g'){ if(guardianAuthed()) location.hash='#/g'; } } }catch(_){} }
+async function init(){ await openDB(); await injectSamplesIfEmpty(); autoJump(); setActiveTab(); updateStreakUI(); refreshStudentTexts(); }
+window.addEventListener('load', init);
 </script>
 </body>
 </html>
