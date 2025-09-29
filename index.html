@@ -1,4 +1,4 @@
-<!-- 2025-09-29 19:26 JST | Version: V0.2.13-lite -->
+<!-- 2025-09-29 19:43 JST | Version: V0.2.14-lite -->
 <!doctype html>
 <html lang="ja">
 <head>
@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
-<title>音読SURASURA V0.2.13-lite</title>
+<title>音読SURASURA V0.2.14-lite</title>
 <style>
 :root{--bg:#0b1020;--panel:#111827;--ink:#e6f1ff;--accent:#4f8cff;--ok:#20e3c2;--warn:#ffce3a;--bad:#ff6b6b}
 *{box-sizing:border-box}
@@ -24,7 +24,6 @@ input,select,button,textarea{background:#0c1322;color:var(--ink);border:1px soli
 a.tab{color:#cfe6ff;text-decoration:none;border:1px solid #2a3a56;border-radius:999px;padding:6px 10px}
 a.tab.active{background:#24324a}
 .hidden{display:none!important}
-
 /* landing */
 .landing-cover{position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;background:#0b1020}
 .landing-cover::before{content:"";position:absolute;inset:0;background:radial-gradient(80% 60% at 50% 10%,rgba(79,140,255,.15),transparent),linear-gradient(180deg,rgba(0,0,0,.85),rgba(0,0,0,.92))}
@@ -32,12 +31,8 @@ a.tab.active{background:#24324a}
 .tilegrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media(max-width:640px){.tilegrid{grid-template-columns:1fr}}
 .tile{display:flex;align-items:center;justify-content:center;border-radius:18px;padding:18px;font-size:18px;border:2px solid rgba(255,255,255,.1);box-shadow:0 8px 20px rgba(0,0,0,.4);cursor:pointer;text-decoration:none;color:inherit}
-.tile.stu{background:#4f8cff}
-.tile.guard{background:#20e3c2;color:#06231d}
-.tile.skip{background:#ffce3a;color:#261e00}
-.tile.teach{background:#ff6b6b}
+.tile.stu{background:#4f8cff}.tile.guard{background:#20e3c2;color:#06231d}.tile.skip{background:#ffce3a;color:#261e00}.tile.teach{background:#ff6b6b}
 body.landing-active header,body.landing-active main{visibility:hidden}
-
 /* student */
 .tool-fixed{position:sticky;bottom:0;z-index:20;background:linear-gradient(180deg,transparent,rgba(0,0,0,.4)),#0b1020;padding:8px;border-radius:14px;border:1px solid #1f2b44;display:flex;gap:8px;justify-content:space-between}
 .tool-fixed button{font-size:18px;padding:14px 18px;border-radius:14px;flex:1}
@@ -54,7 +49,7 @@ body.landing-active header,body.landing-active main{visibility:hidden}
 <header>
   <div style="display:flex;gap:12px;align-items:center">
     <div>
-      <h1>音読SURASURA <small class="badge">V0.2.13-lite</small></h1>
+      <h1>音読SURASURA <small class="badge">V0.2.14-lite</small></h1>
       <div class="note">#/start=入口｜#/s=生徒｜#/t=講師｜#/g=保護者（PW）｜?debug=1でログ</div>
     </div>
     <nav class="tabnav" style="margin-left:auto;display:flex;gap:8px">
@@ -219,7 +214,7 @@ body.landing-active header,body.landing-active main{visibility:hidden}
 </main>
 
 <script>
-/* ========= ユーティリティ ========= */
+/* ========= 基本ユーティリティ ========= */
 const qs=s=>document.querySelector(s), qsa=s=>Array.from(document.querySelectorAll(s));
 const debug=new URLSearchParams(location.search).get('debug')==='1';
 if(debug) qs('#dbg').classList.remove('hidden');
@@ -231,15 +226,14 @@ function z2(n){return String(n).padStart(2,'0')}
 function ymd(d){return \`\${d.getFullYear()}-\${z2(d.getMonth()+1)}-\${z2(d.getDate())}\`}
 function ymdhm(t){const d=new Date(t);return \`\${d.getFullYear()}-\${z2(d.getMonth()+1)}-\${z2(d.getDate())} \${z2(d.getHours())}:\${z2(d.getMinutes())}\`}
 function normalizeText(t){ if(!t) return ''; t=t.replace(/<rt>.*?<\\/rt>/g,'').replace(/<[^>]+>/g,''); t=t.replace(/[\\s\\u3000]/g,'').replace(/[、，]/g,'、').replace(/[。．]/g,'。'); t=t.replace(/[「」『』（）()［］\\[\\]〈〉<>・… ,\\.\\-\\?\\!！?]/g,''); t=t.replace(/[Ａ-Ｚａ-ｚ０-９]/g,s=>String.fromCharCode(s.charCodeAt(0)-0xFEE0)); return t; }
-function isKanji(ch){ return /[\\u4E00-\\u9FFF\\u3400-\\u4DBF]/.test(ch); }
 function academicYear(d){ const y=d.getFullYear(); const boundary=new Date(y,3,2); return (d>=boundary)?y:y-1; }
 function parseGrade(label){ const m=String(label||'').match(/小\\s*([1-6])/); return m?Number(m[1]):1; }
 function currentGradeNum(st){ const base=st.grade_base||parseGrade(st.grade||'小1'); const baseAy=st.grade_base_ay||academicYear(new Date(st.created_at||Date.now())); const delta=academicYear(new Date())-baseAy; return Math.min(6,Math.max(1,base+delta)); }
 function currentGradeLabel(st){ return \`小\${currentGradeNum(st)}\`; }
 function fmt2(x){ return (Math.round(Number(x)*100)/100).toFixed(2); }
 
-/* ========= IndexedDB ========= */
-const DB='oral_roles_v0213_lite'; // スキーマは同一、衝突回避のため名前だけ更新
+/* ========= IndexedDB（既存DB名に戻す） ========= */
+const DB='oral_roles_v0212_lite';
 let db;
 function openDB(){
   return new Promise((res,rej)=>{
@@ -251,14 +245,11 @@ function openDB(){
       if(!s.indexNames.contains('school')) s.createIndex('school','school');
       if(!s.indexNames.contains('grade_base')) s.createIndex('grade_base','grade_base');
       if(!s.indexNames.contains('grade_base_ay')) s.createIndex('grade_base_ay','grade_base_ay');
-
       let sess; if(!db.objectStoreNames.contains('sessions')) sess=db.createObjectStore('sessions',{keyPath:'id',autoIncrement:true}); else sess=tx.objectStore('sessions');
       if(!sess.indexNames.contains('student_id')) sess.createIndex('student_id','student_id');
       if(!sess.indexNames.contains('created_at')) sess.createIndex('created_at','created_at');
-
       if(!db.objectStoreNames.contains('passages')) db.createObjectStore('passages',{keyPath:'no'});
       if(!db.objectStoreNames.contains('invites')) db.createObjectStore('invites',{keyPath:'token'});
-
       let g; if(!db.objectStoreNames.contains('guardians')) g=db.createObjectStore('guardians',{keyPath:'id',autoIncrement:true}); else g=tx.objectStore('guardians');
       if(!g.indexNames.contains('student_id')) g.createIndex('student_id','student_id');
     };
@@ -290,14 +281,11 @@ function guardianAuthed(){ try{return localStorage.getItem('guardian_auth')==='1
 function setAutoPref(on){ try{localStorage.setItem('autojump',on?'1':'0')}catch(_){} }
 function enterRole(role){
   try{ const chk=qs('#rememberRole'); if(chk) setAutoPref(chk.checked); localStorage.setItem('last_role',role);}catch(_){}
-  if(role==='s') location.hash='#/s';
-  else if(role==='g') location.hash='#/g';
-  else if(role==='t') location.hash='#/t';
+  if(role==='s') location.hash='#/s'; else if(role==='g') location.hash='#/g'; else if(role==='t') location.hash='#/t';
   setActiveTab();
 }
 function loginTeacher(){
-  const id=(qs('#loginId')?.value||'').trim();
-  const pw=(qs('#loginPw')?.value||'').trim();
+  const id=(qs('#loginId')?.value||'').trim(), pw=(qs('#loginPw')?.value||'').trim();
   if(id==='surasura'&&pw==='surasura'){ try{localStorage.setItem('teacher_auth','1')}catch(_){} enterRole('t'); }
   else alert('IDまたはパスワードが違います');
 }
@@ -308,31 +296,33 @@ async function guardGuardian(){
   alert('パスワードが違います'); return false;
 }
 function updateTopNav(){ const t=qs('#tabT'); t.style.display=teacherAuthed()?'inline-block':'none'; qs('#tabG').style.display='inline-block'; }
-function setActiveTab(){
-  let raw=location.hash||'#/start'; let h=raw.split('?')[0];
-  if(h.startsWith('#/t')&&!teacherAuthed()){ h='#/start'; if(location.hash!=='#/start'){location.hash='#/start';} }
-  if(h.startsWith('#/g')&&!guardianAuthed()){
-    (async()=>{ const ok=await guardGuardian(); if(ok){location.hash='#/g'; setActiveTab();} else {location.hash='#/start'; setActiveTab();} })();
-    h='#/start';
-  }
-  qsa('a.tab').forEach(a=>a.classList.remove('active'));
-  if(h.startsWith('#/s')) qs('#tabS').classList.add('active');
-  else if(h.startsWith('#/t')) qs('#tabT').classList.add('active');
-  else if(h.startsWith('#/g')) qs('#tabG').classList.add('active');
 
-  const onLanding=(h==="#/start"||h==="#/");
-  const cover=qs('#landingCover'); if(cover){ cover.classList.toggle('hidden',!onLanding); }
-  document.body.classList.toggle('landing-active',onLanding);
-  qs('#viewS').classList.toggle('hidden',!h.startsWith('#/s'));
-  qs('#viewT').classList.toggle('hidden',!h.startsWith('#/t'));
-  qs('#viewG').classList.toggle('hidden',!h.startsWith('#/g'));
-  updateTopNav();
-  if(h.startsWith('#/t')) refreshTeacher();
-  if(h.startsWith('#/g')) initGuardianToday();
+function setActiveTab(){
+  try{
+    let raw=location.hash||'#/start'; let h=raw.split('?')[0];
+    if(h.startsWith('#/t')&&!teacherAuthed()){ h='#/start'; if(location.hash!=='#/start'){location.hash='#/start';} }
+    if(h.startsWith('#/g')&&!guardianAuthed()){
+      (async()=>{ const ok=await guardGuardian(); if(ok){location.hash='#/g'; setActiveTab();} else {location.hash='#/start'; setActiveTab();} })();
+      h='#/start';
+    }
+    qsa('a.tab').forEach(a=>a.classList.remove('active'));
+    if(h.startsWith('#/s')) qs('#tabS').classList.add('active');
+    else if(h.startsWith('#/t')) qs('#tabT').classList.add('active');
+    else if(h.startsWith('#/g')) qs('#tabG').classList.add('active');
+
+    const onLanding=(h==="#/start"||h==="#/");
+    const cover=qs('#landingCover'); if(cover){ cover.classList.toggle('hidden',!onLanding); }
+    document.body.classList.toggle('landing-active',onLanding);
+    qs('#viewS').classList.toggle('hidden',!h.startsWith('#/s'));
+    qs('#viewT').classList.toggle('hidden',!h.startsWith('#/t'));
+    qs('#viewG').classList.toggle('hidden',!h.startsWith('#/g'));
+    updateTopNav();
+    if(h.startsWith('#/t')) refreshTeacher();
+    if(h.startsWith('#/g')) initGuardianToday();
+  }catch(e){ log('setActiveTab error',e); }
 }
 window.addEventListener('hashchange',setActiveTab);
 setTimeout(()=>{
-  // 上部タブ
   qsa('a.tab').forEach(a=>a.addEventListener('click',e=>{
     const href=a.getAttribute('href'); if(!href) return;
     e.preventDefault();
@@ -340,20 +330,17 @@ setTimeout(()=>{
     if(href==="#/g"&&!guardianAuthed()){ guardGuardian().then(ok=>{ if(ok){location.hash='#/g'; setActiveTab();} }); return; }
     location.hash=href; setActiveTab();
   }));
-  // ランディングのタイル
   qs('#goS')?.addEventListener('click',e=>{ e.preventDefault(); enterRole('s'); });
   qs('#goSkip')?.addEventListener('click',e=>{ e.preventDefault(); enterRole('s'); });
   qs('#goG')?.addEventListener('click',async e=>{ e.preventDefault(); const ok=await guardGuardian(); if(ok) enterRole('g'); });
   qs('#goT')?.addEventListener('click',e=>{ e.preventDefault(); if(teacherAuthed()) enterRole('t'); else { location.hash='#/start'; setActiveTab(); qs('#loginId')?.focus(); } });
-
   qs('#loginBtn')?.addEventListener('click',loginTeacher);
   qs('#loginId')?.addEventListener('keydown',e=>{ if(e.key==='Enter') loginTeacher(); });
   qs('#loginPw')?.addEventListener('keydown',e=>{ if(e.key==='Enter') loginTeacher(); });
 },0);
 
 /* ========= 録音 / ASR ========= */
-let mediaStream,audioCtx,analyser,procNode,recorder,recChunks=[],isPaused=false,rafId=null;
-let asr=null; // ← v0.2.13 で追加（停止漏れ対策）
+let mediaStream,audioCtx,analyser,procNode,recorder,recChunks=[],isPaused=false,rafId=null,asr=null;
 
 function startViz(){
   const canvas=qs('#viz'); if(!canvas||!analyser) return;
@@ -364,7 +351,7 @@ function startViz(){
     ctx.beginPath(); const mid=height/2;
     for(let x=0;x<width;x++){
       const i=Math.floor(x/data.length*data.length);
-      const y=(data[i]-128)/128* (height*0.4);
+      const y=(data[i]-128)/128*(height*0.4);
       if(x===0) ctx.moveTo(x,mid+y); else ctx.lineTo(x,mid+y);
     }
     ctx.strokeStyle='#cfe6ff'; ctx.lineWidth=2; ctx.stroke();
@@ -372,7 +359,10 @@ function startViz(){
   }
   cancelAnimationFrame(rafId); rafId=requestAnimationFrame(draw);
 }
-function stopViz(){ if(rafId){ cancelAnimationFrame(rafId); rafId=null; const c=qs('#viz'); c&&c.getContext('2d').clearRect(0,0,c.width,c.height); }
+function stopViz(){
+  if(rafId){ cancelAnimationFrame(rafId); rafId=null; }
+  const c=qs('#viz'); if(c){ const ctx=c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height); }
+} // ← 閉じカッコ修正済み
 
 async function startRec(){
   mediaStream=await navigator.mediaDevices.getUserMedia({audio:true});
@@ -390,14 +380,13 @@ async function startRec(){
 async function pauseRec(){ if(!recorder) return; if('pause' in recorder && recorder.state==='recording'){ recorder.pause(); isPaused=true; } }
 async function resumeRec(){ if(!recorder) return; if('resume' in recorder && recorder.state==='paused'){ recorder.resume(); isPaused=false; } }
 async function stopRec(){
-  try{ recorder && recorder.state!=='inactive' && recorder.stop(); }catch(_){} 
+  try{ recorder && recorder.state!=='inactive' && recorder.stop(); }catch(_){}
   try{ mediaStream && mediaStream.getTracks().forEach(t=>t.stop()); }catch(_){}
   try{ procNode && procNode.disconnect(); analyser && analyser.disconnect(); }catch(_){}
   if(audioCtx){ try{ await audioCtx.close(); }catch(_){} }
   qs('#readingText').classList.remove('reading-anim');
   stopViz();
-  // v0.2.13: ASR を確実に停止
-  try{ if(asr){ asr.onresult=null; asr.onend=null; asr.onerror=null; asr.stop(); } }catch(_){}
+  try{ if(asr){ asr.onresult=asr.onend=asr.onerror=null; asr.stop(); } }catch(_){}
   asr=null;
 }
 function startASR(){
@@ -409,8 +398,8 @@ function startASR(){
     let tmp=''; for(let i=e.resultIndex;i<e.results.length;i++){ const r=e.results[i]; if(r.isFinal) asrText+=r[0].transcript; else tmp+=r[0].transcript; }
     area.value=asrText+tmp;
   };
-  asr.onend=()=>{ log('ASR end'); }; // 必要なら再開ロジックを追加
-  asr.onerror=ev=>{ log('ASR error',ev&&ev.error); };
+  asr.onerror=ev=>log('ASR error',ev&&ev.error);
+  asr.onend=()=>log('ASR end');
   asr.start(); return true;
 }
 
@@ -452,42 +441,22 @@ async function refreshStudentTexts(){
     const n=countByNo[p.no]||0; const o=document.createElement('option');
     o.value=p.no; o.textContent=\`\${p.no} \${p.title||''}（\${n}回）\`; sel.appendChild(o);
   });
-  // 最初の1件を本文に反映（空なら何もしない）
   if(passages.length){ loadPassageByNo(passages[0].no); sel.value=passages[0].no; }
 }
 
-/* フォントサイズ：保存＆復元 */
-function applyFontSize(px){ qs('#readingText').style.fontSize=px+'px'; try{ localStorage.setItem('reading_font_px',String(px)); }catch(_){} }
+/* フォントサイズ保存 */
+function applyFontSize(px){ qs('#readingText').style.fontSize=px+'px'; try{localStorage.setItem('reading_font_px',String(px));}catch(_){} }
 (function restoreFont(){ const px=Number(localStorage.getItem('reading_font_px')||28); applyFontSize(px); })();
 
 qs('#setStudentBtn').onclick=chooseStudent;
-qs('#loadPassageBtn').onclick=()=>{
-  const typed=qs('#textNo').value.trim();
-  const sel=qs('#textSelectS').value;
-  const no=typed||sel;
-  if(no) loadPassageByNo(no);
-};
+qs('#loadPassageBtn').onclick=()=>{ const typed=qs('#textNo').value.trim(); const sel=qs('#textSelectS').value; const no=typed||sel; if(no) loadPassageByNo(no); };
 qs('#textSelectS').addEventListener('change',e=>{ const no=e.target.value; if(no) loadPassageByNo(no); });
 qsa('.fontBtn').forEach(b=> b.addEventListener('click',()=>{ const sz=Number(b.dataset.size||28); applyFontSize(sz); }));
 
-qs('#startBtn').onclick= async ()=>{
-  qs('#startBtn').disabled=true; qs('#stopBtn').disabled=false; qs('#pauseBtn').disabled=false; qs('#saveBtn').disabled=true; qs('#dlAudioBtn').disabled=true; isPaused=false;
-  await startRec(); const ok=startASR();
-  if(!ok){ qs('#startBtn').disabled=false; qs('#stopBtn').disabled=true; qs('#pauseBtn').disabled=true; }
-};
-qs('#pauseBtn').onclick= async ()=>{ if(!recorder) return;
-  if(isPaused){ await resumeRec(); qs('#pauseBtn').textContent='⏸ 一時停止'; }
-  else { await pauseRec(); qs('#pauseBtn').textContent='▶ 再開'; }
-};
-qs('#stopBtn').onclick= async ()=>{
-  await stopRec();
-  qs('#startBtn').disabled=false; qs('#stopBtn').disabled=true; qs('#pauseBtn').disabled=true; qs('#pauseBtn').textContent='⏸ 一時停止'; qs('#dlAudioBtn').disabled=false;
-};
-qs('#dlAudioBtn').onclick=()=>{
-  if(!recChunks.length) return;
-  const blob=new Blob(recChunks,{type:'audio/webm'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=\`reading_\${Date.now()}.webm\`; a.click();
-};
+qs('#startBtn').onclick= async ()=>{ qs('#startBtn').disabled=true; qs('#stopBtn').disabled=false; qs('#pauseBtn').disabled=false; qs('#saveBtn').disabled=true; qs('#dlAudioBtn').disabled=true; isPaused=false; await startRec(); const ok=startASR(); if(!ok){ qs('#startBtn').disabled=false; qs('#stopBtn').disabled=true; qs('#pauseBtn').disabled=true; } };
+qs('#pauseBtn').onclick= async ()=>{ if(!recorder) return; if(isPaused){ await resumeRec(); qs('#pauseBtn').textContent='⏸ 一時停止'; } else { await pauseRec(); qs('#pauseBtn').textContent='▶ 再開'; } };
+qs('#stopBtn').onclick= async ()=>{ await stopRec(); qs('#startBtn').disabled=false; qs('#stopBtn').disabled=true; qs('#pauseBtn').disabled=true; qs('#pauseBtn').textContent='⏸ 一時停止'; qs('#dlAudioBtn').disabled=false; };
+qs('#dlAudioBtn').onclick=()=>{ if(!recChunks.length) return; const blob=new Blob(recChunks,{type:'audio/webm'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=\`reading_\${Date.now()}.webm\`; a.click(); };
 function speakResult(overall){ try{ const s=new SpeechSynthesisUtterance(\`採点結果、総合 \${overall} 点。おつかれさま。\`); s.lang='ja-JP'; speechSynthesis.speak(s);}catch(_){} }
 
 async function updateStreakUI(){
@@ -525,129 +494,43 @@ async function refreshTeacher(){
   const list=await idb.listStudents();
   const schoolF=(qs('#searchSchool')?.value.trim())||'';
   const gradeF=(qs('#searchGrade')?.value)||'';
-  const filtered=list.filter(s=>{
-    const okSchool=!schoolF||(String(s.school||'').includes(schoolF));
-    const okGrade=!gradeF||(currentGradeNum(s)===Number(gradeF));
-    return okSchool&&okGrade;
-  });
+  const filtered=list.filter(s=>{ const okSchool=!schoolF||(String(s.school||'').includes(schoolF)); const okGrade=!gradeF||(currentGradeNum(s)===Number(gradeF)); return okSchool&&okGrade; });
   const sel=qs('#studentList'); if(sel){ sel.innerHTML=''; filtered.forEach(s=>{ const o=document.createElement('option'); o.value=s.id; o.textContent=\`\${s.name}（\${currentGradeLabel(s)}｜\${s.school||'学校未登録'}）\`; sel.appendChild(o); }); }
   await listPassages(); await refreshToday();
 }
-qs('#addStudentBtn').onclick= async ()=>{
-  const name=qs('#studentName').value.trim(); const school=qs('#studentSchool').value.trim(); const gradeLabel=qs('#studentGrade').value;
-  if(!name) return alert('氏名を入れてください');
-  const s={name,school,grade:gradeLabel,grade_base:parseGrade(gradeLabel),grade_base_ay:academicYear(new Date())};
-  await idb.addStudent(s);
-  qs('#studentName').value=''; qs('#studentSchool').value='';
-  await refreshTeacher();
+qs('#addStudentBtn').onclick= async ()=>{ const name=qs('#studentName').value.trim(); const school=qs('#studentSchool').value.trim(); const gradeLabel=qs('#studentGrade').value;
+  if(!name) return alert('氏名を入れてください'); const s={name,school,grade:gradeLabel,grade_base:parseGrade(gradeLabel),grade_base_ay:academicYear(new Date())}; await idb.addStudent(s);
+  qs('#studentName').value=''; qs('#studentSchool').value=''; await refreshTeacher();
 };
-qs('#delStudentBtn').onclick= async ()=>{
-  const id=Number(qs('#studentList').value||0); if(!id) return;
-  if(!confirm('この生徒を削除しますか（履歴は残ります）？')) return;
-  await idb.delStudent(id); await refreshTeacher();
-};
+qs('#delStudentBtn').onclick= async ()=>{ const id=Number(qs('#studentList').value||0); if(!id) return; if(!confirm('この生徒を削除しますか（履歴は残ります）？')) return; await idb.delStudent(id); await refreshTeacher(); };
 
 /* テキスト管理 */
-async function listPassages(){
-  const t=qs('#passageTable tbody'); if(!t) return; t.innerHTML='';
-  const rows=await idb.listPassages();
-  rows.sort((a,b)=>String(a.no).localeCompare(String(b.no)));
-  rows.forEach(r=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML=\`<td>\${r.no}</td><td>\${r.title||''}</td><td>\${(r.text||'').slice(0,22)}…</td>\`;
-    tr.onclick=()=>{ qs('#textNoT').value=r.no; qs('#titleT').value=r.title||''; qs('#passageT').value=r.text||''; };
-    t.appendChild(tr);
-  });
-}
-qs('#savePassageBtn').onclick= async ()=>{
-  const no=qs('#textNoT').value.trim(); const title=qs('#titleT').value.trim(); const text=qs('#passageT').value.trim();
-  if(!no||!text) return alert('番号と本文を入れてください');
-  await idb.savePassage(no,title,text); await listPassages(); alert('保存/更新しました');
-};
-qs('#delPassageBtn').onclick= async ()=>{
-  const no=qs('#textNoT').value.trim(); if(!no) return;
-  if(!confirm('削除しますか？')) return;
-  await idb.delPassage(no); await listPassages();
-};
+async function listPassages(){ const t=qs('#passageTable tbody'); if(!t) return; t.innerHTML=''; const rows=await idb.listPassages(); rows.sort((a,b)=>String(a.no).localeCompare(String(b.no))); rows.forEach(r=>{ const tr=document.createElement('tr'); tr.innerHTML=\`<td>\${r.no}</td><td>\${r.title||''}</td><td>\${(r.text||'').slice(0,22)}…</td>\`; tr.onclick=()=>{ qs('#textNoT').value=r.no; qs('#titleT').value=r.title||''; qs('#passageT').value=r.text||''; }; t.appendChild(tr); }); }
+qs('#savePassageBtn').onclick= async ()=>{ const no=qs('#textNoT').value.trim(); const title=qs('#titleT').value.trim(); const text=qs('#passageT').value.trim(); if(!no||!text) return alert('番号と本文を入れてください'); await idb.savePassage(no,title,text); await listPassages(); alert('保存/更新しました'); };
+qs('#delPassageBtn').onclick= async ()=>{ const no=qs('#textNoT').value.trim(); if(!no) return; if(!confirm('削除しますか？')) return; await idb.delPassage(no); await listPassages(); };
 qs('#listPassagesBtn').onclick=listPassages;
 
 /* 今日のダイジェスト */
-async function refreshToday(){
-  const today=new Date(); today.setHours(0,0,0,0);
-  const start=today.getTime(), end=start+86400000;
-  const rows=await idb.listSessions(null,start,end);
-  const t=qs('#todayTable tbody'); if(t) t.innerHTML='';
-  const students=await idb.listStudents(); const sMap=new Map(students.map(s=>[s.id,s]));
-  rows.forEach(r=>{
-    const st=sMap.get(r.student_id)||{name:'?',grade:'?',school:''};
-    if(t){ const tr=document.createElement('tr'); tr.innerHTML=\`<td>\${ymdhm(r.created_at)}</td><td>\${st.name}</td><td>\${currentGradeLabel(st)}</td><td>\${r.text_no||''}</td><td>\${r.cpm}</td><td>\${fmt2(r.cer)}</td><td>\${r.f0range}</td><td>\${r.overall}</td>\`; t.appendChild(tr); }
-  });
+async function refreshToday(){ const today=new Date(); today.setHours(0,0,0,0); const start=today.getTime(), end=start+86400000; const rows=await idb.listSessions(null,start,end);
+  const t=qs('#todayTable tbody'); if(t) t.innerHTML=''; const students=await idb.listStudents(); const sMap=new Map(students.map(s=>[s.id,s]));
+  rows.forEach(r=>{ const st=sMap.get(r.student_id)||{name:'?',grade:'?',school:''}; if(t){ const tr=document.createElement('tr'); tr.innerHTML=\`<td>\${ymdhm(r.created_at)}</td><td>\${st.name}</td><td>\${currentGradeLabel(st)}</td><td>\${r.text_no||''}</td><td>\${r.cpm}</td><td>\${fmt2(r.cer)}</td><td>\${r.f0range}</td><td>\${r.overall}</td>\`; t.appendChild(tr);} });
 }
 qs('#refreshTodayBtn').onclick=refreshToday;
 qs('#searchStudentsBtn')?.addEventListener('click',refreshTeacher);
 qs('#searchSchool')?.addEventListener('keydown',e=>{ if(e.key==='Enter') refreshTeacher(); });
 qs('#searchGrade')?.addEventListener('change',refreshTeacher);
-qs('#exportCsvBtn').onclick= async ()=>{
-  const rows=await idb.listSessions();
-  const hdr=['datetime','student','grade_current','text_no','cpm','cer','f0range','prosody','overall'];
-  const students=await idb.listStudents(); const sMap=new Map(students.map(s=>[s.id,s]));
-  const lines=[hdr.join(',')];
-  rows.forEach(r=>{
-    const st=sMap.get(r.student_id)||{name:'?',grade:'?',school:''};
-    const vals=[new Date(r.created_at).toISOString(),st.name,currentGradeLabel(st),r.text_no||'',r.cpm,fmt2(r.cer),r.f0range,r.prosodyScore||0,r.overall].map(v=>\`"\${String(v).replace(/"/g,'""')}"\`);
-    lines.push(vals.join(','));
-  });
-  const blob=new Blob([lines.join('\\n')],{type:'text/csv'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='oral_reading_history.csv'; a.click();
-};
+qs('#exportCsvBtn').onclick= async ()=>{ const rows=await idb.listSessions(); const hdr=['datetime','student','grade_current','text_no','cpm','cer','f0range','prosody','overall']; const students=await idb.listStudents(); const sMap=new Map(students.map(s=>[s.id,s])); const lines=[hdr.join(',')]; rows.forEach(r=>{ const st=sMap.get(r.student_id)||{name:'?',grade:'?',school:''}; const vals=[new Date(r.created_at).toISOString(),st.name,currentGradeLabel(st),r.text_no||'',r.cpm,fmt2(r.cer),r.f0range,r.prosodyScore||0,r.overall].map(v=>\`"\${String(v).replace(/"/g,'""')}"\`); lines.push(vals.join(',')); }); const blob=new Blob([lines.join('\\n')],{type:'text/csv'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='oral_reading_history.csv'; a.click(); };
 
 /* ========= 保護者（当日分のみ） ========= */
-async function initGuardianToday(){
-  const sid=Number(localStorage.getItem('guardian_student_id')||0);
-  if(!sid){ qs('#gStudent').textContent='未連携'; return; }
-  const st=(await idb.listStudents()).find(s=>s.id===sid);
-  qs('#gStudent').textContent=st? \`\${st.name}（\${currentGradeLabel(st)}）\`:'未連携';
-  const today=new Date(); today.setHours(0,0,0,0);
-  const rows=await idb.listSessions(sid,today.getTime(),today.getTime()+86400000);
-  const tb=qs('#gTable tbody'); if(tb) tb.innerHTML='';
-  rows.forEach(r=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML=\`<td>\${ymdhm(r.created_at)}</td><td>\${r.text_no||''}</td><td>\${r.cpm}</td><td>\${fmt2(r.cer)}</td><td>\${r.overall}</td>\`;
-    tb?.appendChild(tr);
-  });
-}
+async function initGuardianToday(){ const sid=Number(localStorage.getItem('guardian_student_id')||0); if(!sid){ qs('#gStudent').textContent='未連携'; return; } const st=(await idb.listStudents()).find(s=>s.id===sid); qs('#gStudent').textContent=st? \`\${st.name}（\${currentGradeLabel(st)}）\`:'未連携'; const today=new Date(); today.setHours(0,0,0,0); const rows=await idb.listSessions(sid,today.getTime(),today.getTime()+86400000); const tb=qs('#gTable tbody'); if(tb) tb.innerHTML=''; rows.forEach(r=>{ const tr=document.createElement('tr'); tr.innerHTML=\`<td>\${ymdhm(r.created_at)}</td><td>\${r.text_no||''}</td><td>\${r.cpm}</td><td>\${fmt2(r.cer)}</td><td>\${r.overall}</td>\`; tb?.appendChild(tr); }); }
 qs('#gInstallBtn').onclick=()=>{ alert('ホーム画面に追加：\\n1) 右上メニュー（⋮ / 共有）→「ホーム画面に追加」\\n2) 追加後はそのアイコンから起動できます。'); };
 
-/* ========= サンプル注入 ========= */
-async function injectSamplesIfEmpty(){
-  const ps=await idb.listPassages(); if(ps.length>=5) return;
-  for(let g=1; g<=6; g++){
-    for(let i=1;i<=10;i++){
-      const no=\`G\${g}-\${String(i).padStart(3,'0')}\`;
-      const title=\`小\${g}サンプル\${String(i).padStart(2,'0')}\`;
-      const text=\`小\${g}のサンプル文章 \${String(i).padStart(2,'0')}。きょうは良い天気です。川のながれがきらきら光ります。\`;
-      await idb.savePassage(no,title,text);
-    }
-  }
-}
+/* ========= サンプル ========= */
+async function injectSamplesIfEmpty(){ const ps=await idb.listPassages(); if(ps.length>=5) return; for(let g=1; g<=6; g++){ for(let i=1;i<=10;i++){ const no=\`G\${g}-\${String(i).padStart(3,'0')}\`; const title=\`小\${g}サンプル\${String(i).padStart(2,'0')}\`; const text=\`小\${g}のサンプル文章 \${String(i).padStart(2,'0')}。きょうは良い天気です。川のながれがきらきら光ります。\`; await idb.savePassage(no,title,text); } } }
 
 /* ========= 初期化 ========= */
-function autoJump(){
-  try{
-    const auto=localStorage.getItem('autojump')==='1';
-    const last=localStorage.getItem('last_role');
-    const atStart=(!location.hash||location.hash==='#'||location.hash==='#/'||location.hash==='#/start');
-    if(auto && atStart && last){
-      if(last==='t'){ if(teacherAuthed()) location.hash='#/t'; }
-      else if(last==='s') location.hash='#/s';
-      else if(last==='g'){ if(guardianAuthed()) location.hash='#/g'; }
-    }
-  }catch(_){}
-}
-async function init(){
-  await openDB(); await injectSamplesIfEmpty();
-  autoJump(); setActiveTab(); updateStreakUI(); refreshStudentTexts();
-}
+function autoJump(){ try{ const auto=localStorage.getItem('autojump')==='1'; const last=localStorage.getItem('last_role'); const atStart=(!location.hash||location.hash==='#'||location.hash==='#/'||location.hash==='#/start'); if(auto && atStart && last){ if(last==='t'){ if(teacherAuthed()) location.hash='#/t'; } else if(last==='s') location.hash='#/s'; else if(last==='g'){ if(guardianAuthed()) location.hash='#/g'; } } }catch(_){} }
+async function init(){ try{ await openDB(); await injectSamplesIfEmpty(); }catch(e){ log('init DB error',e); } finally { autoJump(); setActiveTab(); updateStreakUI(); refreshStudentTexts(); } }
 window.addEventListener('load',init);
 </script>
 </body>
